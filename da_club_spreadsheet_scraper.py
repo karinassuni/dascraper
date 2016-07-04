@@ -1,6 +1,3 @@
-# TODO: generate EVENTS from club data
-# TODO: for EVENTS in here and the calendar parser, create two fields start_time and end_time to replace time, whose values are UNIX timestamps
-# TODO: reformat the "dates" fields of CLUBS to be an array of some universal string date representation
 import docx
 import datetime
 import json
@@ -71,4 +68,3 @@ def clean_time(time):
 
 if __name__ == "__main__":
     main()
-
