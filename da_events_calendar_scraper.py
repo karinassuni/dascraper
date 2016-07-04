@@ -18,7 +18,16 @@ def find_calendar_events(calendar_html):
                     r = requests.get(BASE_URL + a["href"])
                     events.append(parse_event_page(r.text))
 
-    return events
+    if find_calendar_events.this_month is True:
+        find_calendar_events.this_month = False
+        NEXT_MONTH = BASE_URL + calendar_soup.find(id="nextmonth").caption.a["href"]
+        r = requests.get(NEXT_MONTH)
+        return events + find_calendar_events(r.text)
+    else:
+        return events
+# Equivalent to a static local variable in C++--the value of this attribute is preserved
+# between function calls
+find_calendar_events.this_month = True
 
 def parse_event_page(event_html):
     event_soup = BeautifulSoup(event_html, "html.parser")
@@ -43,7 +52,7 @@ def main():
         r = requests.get(THIS_MONTH)
         with open("calendar.html", 'w') as outfile:
             outfile.write(r.text)
-        print "Calendar downloaded."
+        print "This month's calendar downloaded."
 
         return r.text
 
