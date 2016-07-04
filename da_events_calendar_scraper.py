@@ -6,11 +6,11 @@ import json
 BASE_URL = "https://www.deanza.edu/eventscalendar/"
 
 def find_calendar_events(calendar_html):
-    calendar_soup = BeautifulSoup(calendar_html, "html.parser")
+    calendar_soup = BeautifulSoup(calendar_html, "lxml")
     events = []
-    calendar_body = calendar_soup.find("table", class_="main")
+    calendar = calendar_soup.find("table", class_="main")
     # Skip the first tr, which is the header
-    for tr in calendar_body.find_all("tr")[1:]:
+    for tr in calendar.find_all("tr")[1:]:
         for td in tr.find_all("td"):
             for a in td.find_all("a"):
                 # "class" is a special multi-valued attribute, so it's contained in a list
@@ -30,7 +30,7 @@ def find_calendar_events(calendar_html):
 find_calendar_events.this_month = True
 
 def parse_event_page(event_html):
-    event_soup = BeautifulSoup(event_html, "html.parser")
+    event_soup = BeautifulSoup(event_html, "lxml")
     EVENT_FIELDS = ["Description:", "Date:", "Time:", "Location:", "Sponsor:"]
     event = {
         "name": event_soup.find(id="cal_div_obj").h2.get_text(),
