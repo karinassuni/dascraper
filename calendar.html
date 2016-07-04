@@ -1,0 +1,1795 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>De Anza Events Calendar</title>
+
+<script type="text/javascript">
+
+<!-- <![CDATA[
+// The following code is used to support the small popups that
+// give the full description of an event when the user move the
+// mouse over it.
+// Thanks to Klaus Knopper (www.knoppix.com) for this script.
+// It has been modified to work with the existing WebCalendar
+// architecture on 02/25/2005
+//
+// 03/05/2005 Prevent popup from going off screen by setting
+// maximum width, which is configurable
+//
+// Bubblehelp infoboxes, (C) 2002 Klaus Knopper <infobox@knopper.net>
+// You can copy/modify and distribute this code under the conditions
+// of the GNU GENERAL PUBLIC LICENSE Version 2.
+//
+var ns4            // Are we using Netscape4?
+var ie4            // Are we using Internet Explorer Version 4?
+var ie5            // Are we using Internet Explorer Version 5 and up?
+var kon            // Are we using KDE Konqueror?
+var x,y,winW,winH  // Current help position and main window size
+var idiv=null      // Pointer to infodiv container
+var px="px"        // position suffix with "px" in some cases
+var popupW         // width of popup
+var popupH         // height of popup
+var xoffset = 10;    // popup distance from cursor x coordinate
+var yoffset = 5;   // popup distance from cursor y coordinate
+var followMe = 0   // allow popup to follow cursor...turn off for better performance
+var maxwidth = 300 // maximum width of popup window
+
+function nsfix(){setTimeout("window.onresize = rebrowse", 2000);}
+
+function rebrowse(){window.location.reload();}
+
+function infoinit(){
+  ns4=(document.layers)?true:false, ie4=(document.all)?true:false;
+  ie5=((ie4)&&((navigator.userAgent.indexOf('MSIE 5')>0)||(navigator.userAgent.indexOf('MSIE 6')>0)))?true:false;
+  kon=(navigator.userAgent.indexOf('konqueror')>0)?true:false;
+  x=0;
+  y=0;
+  winW=800;
+  winH=600;
+  idiv=null;
+  
+  if (followMe) 
+  {
+    document.onmousemove = mousemove;
+    if(ns4&&document.captureEvents) document.captureEvents(Event.MOUSEMOVE);
+  }
+  // Workaround for just another netscape bug: Fix browser confusion on resize
+  // obviously conqueror has a similar problem :-(
+  if(ns4||kon){ nsfix() }
+  if(ns4) { px=""; }
+
+  var entries = document.getElementsBySelector("a.entry");
+  entries = entries.concat(document.getElementsBySelector("a.layerentry"));
+  entries = entries.concat(document.getElementsBySelector("a.unapprovedentry"));
+  entries = entries.concat(document.getElementsBySelector("tr.task"));
+  for (var i = 0; i < entries.length; i++) {
+    entries[i].onmouseover = function(event) {
+   show(event, "eventinfo-" + this.id);
+   return true;
+  }
+    entries[i].onmouseout = function() {
+      hide("eventinfo-" + this.id);
+   return true;
+    }
+  }
+
+}
+
+// Temporary remove pop up function...
+// function stubs to prevent page errors.
+
+function hide(v)
+{
+    return;
+}
+
+function show(v,x)
+{
+    return;
+}
+
+/*
+
+function hide(name){
+  // idiv.style.left and idiv.style.top reset to zero so that it doesn't push out the right
+  // edge of the containing div in the case of unwrapped URLs. L. ching , Web Team
+  idiv.style.left = "0" + px ;
+  idiv.style.top = "0" + px ;
+  idiv.style.visibility=ns4?"hide":"hidden";
+  idiv=null;
+}
+
+function gettip(name) {
+  return (document.layers&&document.layers[name])?document.layers[name]:(document.all && document.all[name])?document.all[name]:document[name]?document[name]:(document.getElementById(name)?document.getElementById(name):0);
+}
+
+function show(evt, name)
+{
+    
+  if(idiv) { hide(name); }
+  
+  idiv = gettip(name);
+  
+  if(idiv)
+  {
+   scrollX = 0; scrollY = 0;
+
+   scrollX=(typeof window.pageXOffset == "number")? window.pageXOffset:(document.documentElement && document.documentElement.scrollLeft)?document.documentElement.scrollLeft:(document.body && document.body.scrollLeft)?document.body.scrollLeft:window.scrollX;
+   scrollY=(typeof window.pageYOffset == "number")? window.pageYOffset:(document.documentElement && document.documentElement.scrollTop)?document.documentElement.scrollTop:(document.body && document.body.scrollTop)?document.body.scrollTop:window.scrollY;
+   
+   winW=(window.innerWidth) ? window.innerWidth+window.pageXOffset:document.body.offsetWidth;
+   winH=(window.innerHeight)? window.innerHeight+scrollY:document.body.offsetHeight+scrollY;
+   
+   popupW = idiv.offsetWidth;
+   popupH = idiv.offsetHeight;   
+
+   showtip(evt);
+  }
+}
+
+function recursive_resize(ele, width, height) {
+  if (ele.nodeType != 1) {
+    return;
+  }
+
+  if (width != null && ele.offsetWidth > width) {
+    ele.style.width = width + px;
+  }
+
+  if (height != null && ele.offsetHeight > height) {
+    ele.style.height = height + px;
+  }
+
+  for (var i = 0; i < ele.childNodes.length; i++) {
+    recursive_resize(ele.childNodes[i],
+                     width - ele.childNodes[i].offsetLeft,
+                     height - ele.childNodes[i].offsetTop);
+  }
+}
+
+function showtip(e){
+  e = e ? e: window.event;
+  if(idiv) {
+    if(e)   {
+      x = e.pageX?e.pageX:e.clientX ? e.clientX + scrollX : 0; 
+      y = e.pageY?e.pageY:e.clientY ? e.clientY + scrollY : 0;
+    } else {
+      x=0; y=0;
+    }
+    
+    // Make sure we don't go off screen
+    recursive_resize(idiv, maxwidth);
+    popupW = idiv.offsetWidth;
+    popupH = idiv.offsetHeight;
+    
+    // parentLeft and parentRight added by WebTeam
+    // Corrects for new containing div  cal_div_obj. Theoretically, should return 0,0 if
+    // there was no containing div.
+    parentLeft = idiv.offsetParent.offsetLeft ;
+    parentTop = idiv.offsetParent.offsetTop;
+
+    
+    
+    // Left and Top processing sequence changed so that Top is processed before Left
+    // Larry Ching, Web Team
+    iychange = false ;
+    if (y + popupH + yoffset > winH - yoffset) {
+      // Case where idiv could project beyond lower edge of window
+      iychange = true ;
+      if (winH - popupH - yoffset < 0) {
+        // Too close to top of window
+        idiv.style.top = 0 + px;
+      } else {
+        idiv.style.top = (winH - popupH - yoffset - parentTop) + px;
+      }
+    } else {
+      idiv.style.top = (y  - parentTop + yoffset) + px;
+    }
+    
+    if (x + popupW + xoffset > winW - xoffset) {
+      idiv.style.left = (x - popupW - xoffset - parentLeft) + px;
+    } else {
+      if (iychange) {
+        // Y axis orientation changed - must change x positioning
+        // Using parentLeft value because idiv is positioned relative to a parent object.
+        if (x > popupW + xoffset ) {
+          idiv.style.left = (x - parentLeft - xoffset - popupW) + px;
+        }else{
+          // Not enough room to place idiv to the left - place on right
+          idiv.style.left = (x - parentLeft + xoffset) + px;
+        }
+      }else{
+        idiv.style.left = (x + xoffset + parentLeft) + px;
+      }
+    }
+    idiv.style.visibility=ns4?"show":"visible";
+  }
+}
+
+function mousemove(e){
+  showtip(e);
+}
+
+*/
+// Initialize after loading the page
+// Commented out on Oct. 25, 2007 to avoid error message. Web Team De Anza College, Larry Ching
+// addLoadHandler(infoinit);
+//]]> -->
+</script>
+<!-- Google Analytics, installed by De Anza Web Team -->
+<script type="text/javascript">
+var gaJsHost = "" ;
+if(document.location.protocol) {
+  gaJsHost = (("https:" == document.location.protocol) ?"https://ssl." : "http://www.");
+}else if(window.location.protocol){
+  gaJsHost = (("https:" == window.location.protocol) ?"https://ssl." : "http://www.");
+}else{
+  gaJsHost = "http://www." ;
+}
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<!-- End Google Analytics -->
+<style type="text/css">
+<!--
+
+/*
+body {
+  color: #000000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  background-color: #FFFFFF;
+}
+*/
+
+a {
+  color: #000000;
+  text-decoration: none;
+}
+a:hover {
+  color: #0000FF;
+}
+#edituser,
+#edituserhandler,
+#groupedit,
+#editnonusers,
+#groupedithandler,
+#editnonusershandler {
+  background-color: #F8F8FF;
+}
+#tabscontent {
+  margin: 0px;
+  padding: 0.5em;
+  border: 2px groove #C0C0C0;
+  width: 70%;
+  background-color: #F8F8FF;
+}
+.tabfor {
+  padding: 0.2em 0.2em 0.07em 0.2em;
+  margin: 0px 0.2em 0px 0.8em;
+  border-top: 2px ridge #C0C0C0;
+  border-left: 2px ridge #C0C0C0;
+  border-right: 2px ridge #C0C0C0;
+  border-bottom: 2px solid #F8F8FF;
+  background-color: #F8F8FF;
+  font-size: 14px;
+  text-decoration: none;
+  color: #000000;
+}
+.tabbak {
+  padding: 0.2em 0.2em 0px 0.2em;
+  margin: 0 0.2em 0 0.8em;
+  border-top: 2px ridge #C0C0C0;
+  border-left: 2px ridge #C0C0C0;
+  border-right: 2px ridge #C0C0C0;
+  background-color: #E0E0E0;
+  font-size: 14px;
+  text-decoration: none;
+  color: #000000;
+}
+#tabscontent_public,
+#tabscontent_groups,
+#tabscontent_nonuser,
+#tabscontent_other,
+#tabscontent_email,
+#tabscontent_colors,
+#tabscontent_participants,
+#tabscontent_sched,
+#tabscontent_pete,
+#tabscontent_export,
+#tabscontent_nonusers,
+#useriframe,
+#grpiframe,
+#nonusersiframe {
+  display: none;
+}
+label {
+  font-weight: bold;
+}
+.sample {
+  border-style: groove;
+}
+.weeknumber,
+.weeknumber a {
+  font-size: 10px;
+  color: #B04040;
+  text-decoration: none;
+}
+img.color {
+  border-width: 0px;
+  width: 15px;
+  height: 15px;
+}
+#cat {
+  display: none;
+  font-size: 18px;
+}
+#trailer {
+  margin: 0px;
+  padding: 0px;
+}
+#trailer form {
+  float: left;
+  width: 33%;
+  border-top: 1px solid #000000; 
+  padding-top: 5px;
+  margin-top: 5px;
+  margin-bottom: 25px;
+}
+#trailer label {
+  margin: 0px;
+  padding: 0px;
+  font-weight: bold;
+}
+#monthform {
+  clear: left;
+}
+#weekform {
+  text-align: center;
+}
+#yearform {
+  text-align: right;
+  clear: right;
+}
+#menu {
+  clear: both;
+}
+#menu a {
+  font-size: 14px;
+  color: #000000;
+  text-decoration: none;
+}
+.prefix {
+  font-weight: bold;
+  font-size: 14px;
+}
+a#programname {
+  margin-top: 10px;
+  font-size: 10px;
+}
+.printer {
+  font-size: 14px;
+  color: #000000;
+  text-decoration: none;
+  clear: both;
+  display: block;
+  width: 15ex;
+}
+.new {
+  border-width: 0px;
+  float: right;
+}
+.unapprovedentry {
+  font-size: 13px;
+  color: #800000;
+  text-decoration: none;
+  padding-right: 3px;
+}
+.nounapproved {
+  margin-left: 20px;
+}
+.layerentry {
+  font-size: 13px;
+  color: #006060;
+  text-decoration: none;
+  padding-right: 3px;
+}
+.entry {
+  font-size: 13px;
+  color: #006000;
+  text-decoration: none;
+  padding-right: 3px;
+}
+.entry img,
+.layerentry img,
+.unapprovedentry img {
+  border-width: 0px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+.dayofmonth {
+  font-size: 13px;
+  color: #000000;
+  font-weight: bold;
+  text-decoration: none;
+  border-top-width: 0px;
+  border-left-width: 0px;
+  border-right: 1px solid #888888;
+  border-bottom: 1px solid #888888;
+  padding: 0px 2px 0px 3px;
+}
+.dayofmonth:hover {
+  color: #0000FF;
+  border-right: 1px solid #0000FF;
+  border-bottom: 1px solid #0000FF;
+}
+.prev img {
+  border-width: 0px;
+  margin-left: 3px;
+  margin-top: 7px;
+  float: left;
+}
+.next img {
+  border-width: 0px;
+  margin-right: 3px;
+  margin-top: 7px;
+  float: right;
+}
+#activitylog .prev {
+  border-width: 0px;
+  float: left;
+}
+#activitylog .next {
+  border-width: 0px;
+  float: right;
+}
+#day .prev img {
+  border-width: 0px;
+  margin-top: 37px;
+  float: left;
+}
+#day .next img {
+  border-width: 0px;
+  margin-top: 37px;
+  float: right;
+}
+#day .monthnav .prev img {
+  border-width: 0px;
+  margin: 0px;
+  float: left;
+}
+#day .monthnav .next img {
+  border-width: 0px;
+  margin: 0px;
+  float: right;
+}
+.dailymatrix {
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: none;
+  text-align: right;
+  background-color: #FFFFFF;
+}
+td.matrixappts {
+  cursor: pointer;
+  text-align: left;
+  background-color: #E7D3D5;
+  vertical-align: middle;
+}
+td.matrix {
+  height: 1px;
+  background-color: #000000;
+}
+.matrix img {
+  border-width: 0px;
+  width: 100%;
+  height: 1px;
+}
+a.matrix img {
+  border-width: 0px;
+  width: 100%;
+  height: 8px;
+}
+.matrixd {
+  border-left: 1px solid #000000;
+  border-right: 1px solid #000000;
+  margin-left: auto; 
+  margin-right: auto;
+}
+.matrixlegend {
+  margin-top: 25px;
+  padding: 5px;
+  text-align: center;
+  background: #ffffff;
+  margin-left: auto; 
+  margin-right: auto;
+  border: 1px solid #000000;
+}
+.matrixlegend img {
+  border-width: 0px;
+  width: 10px;
+  height: 10px;
+}
+.nav {
+  font-size: 14px;
+  color: #000000;
+  text-decoration: none;
+}
+.popup {
+  font-size: 12px;
+  color: #000000;
+  background: #FFFFFF url("gradient.php?base=FFFFFF&height=200") repeat-x;
+  text-decoration: none;
+  position: absolute;
+  z-index: 20;
+  visibility: hidden;
+  top: 0px;
+  left: 0px;
+  border: 1px solid #000000;
+  padding: 3px;
+}
+.popup dl {
+  margin: 0px;
+  padding: 0px;
+}
+.popup dt {
+  font-weight: bold;
+  margin: 0px;
+  padding: 0px;
+}
+.popup dd {
+  margin-left: 20px;
+}
+.tooltip {
+  cursor: help;
+  text-decoration: none;
+  font-weight: bold;
+}
+.tooltipselect {
+  cursor: help;
+  text-decoration: none;
+  font-weight: bold;
+  vertical-align: top;
+}
+h2 {
+  font-size: 20px;
+  color: #000000;
+}
+h3 {
+  font-size: 18px;
+}
+p,
+input,
+select {
+  font-size: 12px;
+}
+textarea {
+  font-size: 12px;
+  overflow: auto;
+}
+.user {
+  font-size: 18px;
+  color: #000000;
+  text-align: center;
+}
+.categories {
+  font-size: 18px;
+  color: #000000;
+  text-align: center;
+}
+.help {
+  vertical-align: top;
+  font-weight: bold;
+}
+img.help {
+  border-width: 0px;
+  cursor: help;
+}
+.standard {
+  border: 1px solid #000000;
+  background-color: #E7D3D5;
+  font-size: 12px;
+}
+.standard th {
+  color: #000000;
+  background: #FFFFFF url("gradient.php?base=FFFFFF&height=30") repeat-x;
+  font-size: 18px;
+  padding: 0px;
+  border-bottom: 1px solid #000000;
+}
+.minical {
+  font-size: 12px;
+  border-collapse: collapse;
+  margin: 0px 0px 5px 0px;
+}
+.minical caption a {
+  font-weight: bold;
+  color: #B04040;
+}
+.minical caption a:hover {
+  color: #0000FF;
+}
+.minical th, 
+.minical td.empty {
+  color: #000000;
+  text-align: center;
+  background-color: #FFFFFF;
+}
+.minical td {
+  padding: 0px 2px;
+  border: 1px solid #FFFFFF;
+}
+.minical td a {
+  display: block;
+  text-align: center;
+  margin: 0px;
+  padding: 3px;
+}
+.minical td.weekend {
+  background-color: #DADADA;
+}
+.minical td#today {
+  background-color: #FDF9A2;
+}
+.minical td.hasevents {
+  background-color: #DDDDFF;
+  font-weight: bold;
+}
+#activitylog table,
+.embactlog {
+  width: 100%;
+  border-bottom: 1px solid #000000;
+  border-right: 1px solid #000000;
+  border-spacing: 0px;
+}
+#activitylog tr,
+.embactlog tr {
+  background-color: #FFFFFF;
+}
+#activitylog .odd,
+.embactlog .odd {
+  background-color: #EEEEEE;
+}
+#activitylog th,
+.embactlog th {
+  width: 14%;
+  color: #000000;
+  background-color: #FFFFFF;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  padding: 1px 3px;
+}
+#activitylog th.usr,
+.embactlog th.usr,
+#activitylog th.cal,
+.embactlog th.cal,
+#activitylog th.action,
+.embactlog th.action {
+  width: 7%;
+}
+#activitylog td,
+.embactlog td {
+  border-left: 1px solid #000000;
+  padding: 1px 3px;
+}
+#day div.minicalcontainer {
+  text-align: right;
+  border: 1px solid #000000;
+  padding: 3px;
+}
+#day .minical caption {
+  text-align: center;
+  font-weight: bold;
+  color: #000000;
+  background-color: #FFFFFF;
+  font-size: 47px;
+}
+#day .minical td.selectedday {
+  border: 2px solid #000000;
+}
+#day .monthnav th {
+  text-align: center;
+  color: #000000;
+  background-color: #FFFFFF;
+  border-width: 0px;
+  padding: 3px;
+}
+.glance {
+  border-bottom: 1px solid #000000;
+  border-right: 1px solid #000000;
+  width: 100%;
+}
+.glance th.empty {
+  border-top: 1px solid #FFFFFF;
+  border-left: 1px solid #FFFFFF;
+  background-color: #FFFFFF;
+}
+.glance th.row {
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  height: 40px;
+  width: 14%;
+  color: #000000;
+  font-size: 13px;
+  background-color: #FFFFFF;
+  vertical-align: top;
+}
+.glance td {
+  vertical-align: top;
+  background: #E7D3D5 url("gradient.php?base=E7D3D5&height=50") repeat-x;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  padding-left: 3px;
+}
+#day dl.desc {
+  display: none;
+  margin: 0px;
+  padding: 0px;
+}
+#day dl.desc dt {
+  font-weight: bold;
+}
+#day dl.desc dd {
+  margin: 0px;
+  padding-left: 20px;
+}
+.viewt,
+#viewv .main,
+#viewm .main,
+#vieww .main,
+#week .main,
+#viewl .main,
+#month .main {
+  border-bottom: 1px solid #000000;
+  border-right: 1px solid #000000;
+  width: 100%;
+  clear: both;
+}
+#year .main tr {
+  vertical-align: top;
+}
+th {
+  font-size: 13px;
+  color: #000000;
+  background-color: #FFFFFF;
+}  
+#viewv .main th,
+#viewl .main th,
+#month .main th {
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  background: #FFFFFF url("gradient.php?base=FFFFFF&height=15") repeat-x;
+  width: 14%;
+}
+#vieww .main th,
+#week .main th {
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  width: 12%;
+}
+#viewm .main th {
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+}
+#viewd .main th {
+  border-right: 1px solid #000000;
+  padding: 1px;
+}
+#viewv .main th.empty,
+#viewm .main th.empty,
+#vieww .main th.empty,
+#week .main th.empty {
+  background-color: #FFFFFF;
+  border-top: 1px solid #FFFFFF;
+  border-left: 1px solid #FFFFFF;
+}
+#week .main th.row {
+  width: 10%;
+  vertical-align: top;
+  height: 40px;
+}
+#vieww .main th.row,
+#viewv .main th.row,
+#viewm .main th.row,
+#viewt th.row {
+  width: 10%;
+  vertical-align: top;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+}
+#viewd .main th.row {
+  border-right-width: 0px;
+  text-align: left;
+}
+#vieww .main th.today,
+#viewm .main th.today,
+#viewv .main th.today,
+#viewt .main th.today {
+  width: 10%;
+  background: #FDF9A2 url("gradient.php?base=FDF9A2&height=100") repeat-x;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  vertical-align: top;
+}
+#week .main th.today {
+  background: #FDF9A2 url("gradient.php?base=FDF9A2&height=100") repeat-x;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  width: 12%;
+}
+#week .main td.hasevents,
+#day .glance td.hasevents {
+  background: #FDF9A2 url("gradient.php?base=FDF9A2&height=100") repeat-x;
+}
+#week .main th a,
+#weekdetails .main th a {
+  color: #000000;
+}
+#week .main th a:hover,
+#weekdetails .main th a:hover {
+  color: #0000FF;
+}
+#year .main td {
+  text-align: center;
+  padding: 0px 3px;
+}
+#viewl .main td,
+#month .main td {
+  font-size: 12px;
+  height: 75px;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  background: #E7D3D5 url("gradient.php?base=E7D3D5&height=100") repeat-x;
+  vertical-align: top;
+}
+#vieww .main td,
+#week .main td,
+#viewm .main td,
+#viewv .main td {
+  font-size: 12px;
+  background: #E7D3D5 url("gradient.php?base=E7D3D5&height=100") repeat-x;
+  vertical-align: top;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  padding-left: 3px;
+}
+#viewl .main td.weekend,
+#month .main td.weekend,
+#viewm .main td.weekend,
+#viewv .main td.weekend,
+#vieww .main td.weekend,
+#week .main td.weekend {
+  background: #DADADA url("gradient.php?base=DADADA&height=100") repeat-x;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+}
+#viewl .main td.today,
+#month .main td.today,
+#viewm .main td.today,
+#vieww .main td.today,
+#viewv .main td.today {
+  background: #FDF9A2 url("gradient.php?base=FDF9A2&height=100") repeat-x;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  vertical-align: top;
+}
+#month #prevmonth,
+#viewl #prevmonth {
+  float: left;
+}
+#month #nextmonth,
+#viewl #nextmonth {
+  float: right;
+}
+#month .minical caption,
+#viewl .minical caption {
+  margin-left: 4ex;
+}
+#year .minical {
+  margin: 5px auto;
+  display: block;
+}
+#year .minical caption {
+  margin: 0px auto;
+}
+#viewl .minical,
+#month .minical {
+  border-width: 0px;
+}
+#viewt td.reg {
+  background: #E7D3D5 url("gradient.php?base=E7D3D5&height=100") repeat-x;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  width: 90%;
+}
+.title {
+  width: 99%;
+  text-align: center;
+}
+
+#day .title .date,
+.title .date {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  color: #000000;
+}
+.title .weeknumber {
+  font-size: 20px;
+  color: #000000;
+}
+.title .viewname,
+#day .title .user,
+.title .user {
+  font-size: 18px;
+  font-weight: bold;
+  color: #000000;
+  text-align: center;
+}
+#weekdetails .main {
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  width: 90%;
+}
+#weekdetails .main th {
+  font-size: 13px;
+  color: #000000;
+  background: #FFFFFF url("gradient.php?base=FFFFFF&height=100") repeat-x;
+  border-left: 1px solid #000000;
+  border-top: 1px solid #000000;
+  width: 100%;
+  padding: 2px;
+}
+#weekdetails .main td {
+  border-left: 1px solid #000000;
+  border-top: 1px solid #000000;
+  background: #E7D3D5 url("gradient.php?base=E7D3D5&height=100") repeat-x;
+  vertical-align: top;
+  height: 75px;
+}
+#weekdetails .main th.today {
+  background: #FDF9A2 url("gradient.php?base=FDF9A2&height=100") repeat-x;
+}
+#weekdetails .main td.weekend {
+  background: #DADADA url("gradient.php?base=DADADA&height=100") repeat-x;
+}
+#viewt table {
+  border-collapse: collapse;
+}
+#viewt .timebar {
+  padding: 0px;
+  width: 100%;
+  border-width: 0px;
+}
+#viewt .timebar td {
+  padding: 0px;
+  background-color: #FFFFFF;
+  text-align: center;
+  color: #CCCCCC;
+  font-size: 10px;
+}
+#viewt .yardstick {
+  width: 100%;
+  padding: 0px;
+  border-width: 0px;
+}
+#viewt .yardstick td {
+  background-color: #FFFFFF;
+  border: 1px solid #CCCCCC;
+}
+#viewt .entrycont {
+  width: 100%;
+  padding: 0px;
+  border-width: 0px;
+}
+#viewt .entrycont td {
+  text-align: right;
+}
+#viewt .entrybar {
+  width: 100%;
+  border-width: 0px;
+}
+#viewt .entrybar td.entry {
+  text-align: center;
+  background-color: #F5DEB3;
+  border: 1px solid #000000;
+}
+#viewt .weekend {
+  width: 90%;
+  background: #DADADA url("gradient.php?base=DADADA&height=100") repeat-x;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  vertical-align: top;
+}
+#viewt td.today {
+  width: 90%;
+  background: #FDF9A2 url("gradient.php?base=FDF9A2&height=100") repeat-x;
+  border-left: 1px solid #000000;
+  border-top: 1px solid #000000;
+  vertical-align: top;
+}
+#viewt th.today {
+  color: #000000;
+  background: #FDF9A2 url("gradient.php?base=FDF9A2&height=100") repeat-x;
+  border-left: 1px solid #000000;
+  border-top: 1px solid #000000;
+  vertical-align: top;
+}
+/* Commented out - see below in custom De Anza section  L.Ching
+#login {
+  margin-top: 70px;
+  margin-bottom: 50px;
+  text-align: center;
+}
+#login table {
+  border: 1px solid #000000;
+  background: #E7D3D5 url("gradient.php?base=E7D3D5&height=200") repeat-x;
+  font-size: 12px;
+}
+*/
+.cookies {
+  font-size: 13px;
+}
+.standard th {
+  color: #000000;
+  background: #FFFFFF url("gradient.php?base=FFFFFF&height=100") repeat-x;
+  font-size: 18px;
+  padding: 0px;
+  border-bottom: 1px solid #000000;
+}
+abbr {
+  cursor: help;
+}
+-->
+</style>
+<style>
+/*
+ * Additional styles added for De Anza College.
+ *
+ *
+ */
+/*
+ * Form objects containing the Month/Week/Year selections that were in the "trailer"
+ * div in trailer.php  are moved from trailer.php to a new file, 
+ * deanza_date_utility.php, so that the selection boxes appear between the title
+ * area and the main content.
+ * A new div, "date_navs", has been created to hold the forms. Links to a "printer
+ * friendly" version of the page, and a Search feature, have been added.
+ */
+#date_navs {
+  position: relative;
+  width: 100%;
+  height: 3em;
+  margin: 0px;
+  padding: 0px;
+}
+
+#date_navs form {
+  position: absolute;
+  height: 2.25em;
+}
+
+#date_navs #dayform {
+  left: 0.5em;
+}
+
+#date_navs #weekform {
+  left: 7em;
+}
+
+#date_navs #monthform {
+  left: 23em;
+}
+
+#date_navs #yearform {
+  left: 36.25em;
+}
+/*
+#date_navs div#date_nav_holdlinks {
+  font-size: 0.85em; 
+  width: 200px; 
+  border: 1px solid red; 
+  position: relative;
+}
+*/
+
+#date_navs a {
+  font-size: 0.9em;
+}
+
+#date_navs a#date_nav_search {
+  position: absolute;
+  top: 0em;
+  /* right: 10.75em; */
+  right: 10.25em;
+}
+
+#date_navs a#date_nav_prtfriend {
+  position: absolute;
+  top: 0em;
+  /* right: 1.5em; */
+  right: 2em;
+}
+
+#date_navs a#date_nav_login {
+  position: absolute;
+  top: 1.125em;
+  right: 5.75em;
+}
+
+#login {
+  /* margin-top: 70px; */
+  /* margin-bottom: 50px; */
+  margin-top: 1em;
+  text-align: center;
+}
+
+#login table {
+  padding: 0.5em;
+  border: 1px solid #000000;
+  background: #E7D3D5 url("gradient.php?base=E7D3D5&height=200") repeat-x;
+  font-size: 12px;
+}
+/* #login table td {
+  padding: 0.5em ;
+} */
+</style><link rel="stylesheet" id='Brad_TAG' type="text/css" media="print" href="includes/print_styles.css" />
+<link rel=\'shortcut icon\' href=\'favicon.ico\' type=\'image/x-icon\' />
+<link rel='stylesheet' type='text/css' href='/template/standard/css/da-css.css' title='De Anza Styles' media='screen' />
+<link rel='stylesheet' type='text/css' href='includes/deanza_style.css' title='De Anza Styles' media='screen' />
+<script type='text/javascript' src='/template/standard/nav-script.js'></script> 
+<script type='text/javascript' src='/template/standard/js/search-form.js'></script>
+<script type='text/javascript' src='/template/standard/js/RoundCorners.js'></script>
+<script type='text/javascript' src='/template/standard/js/SetCurrentPage.js'></script>
+<script type='text/javascript' src='/template/standard/js/ActiveTabs.js'></script>
+<script type='text/javascript' src='includes/deanza_scripts.js'></script>
+</head>
+<body id="month">
+
+<!--  === MENU BAR HEADER INCLUDE === -->
+	<!-- fall2010 new layout preview mode -->
+
+
+<noscript>
+	<div class="js-notification">
+		<h4>JavaScript Disabled</h4>
+		<p>This site works best with JavaScript enabled. Please enable JavaScript and reload this page.<br />You can find most pages by visiting our <a href="/directory/dir-az.html">A to Z Listing</a>.</p>
+	</div>
+</noscript>
+<a id="top"></a>
+<div class="top_main_container"><!-- 100% wide, contains the top squares background image -->
+	<div id="container"><!-- centered into the page 800 pixel wide these divs are closed in the footer include file of secondtier-->
+		<div id="da_header">
+			<!-- LOGO -->
+			<div id="da_logo">
+				<a href="/" title="De Anza College homepage"><img src="/template/standard/images/homepage/DeAnza_Logo_90px.jpg" style="border:0;" width="226" height="90" alt="De Anza College &bull; 21250 Stevens Creek Blvd. &bull; Cupertino, CA 95014"   /></a>
+			</div>
+			<div id="da_top-tools">	
+				<!-- SEARCH -->
+				<form id="search" name="search" method="get" action="http://gsearch2.fhda.edu/search">
+					<!-- <div class="da_header_date">July 3, 2016</div> -->
+					<input type="hidden" name="site" value="Main_Crawl" />
+					<input type="hidden" name="client" value="Main_Crawl" />
+					<input type="hidden" name="proxystylesheet" value="Main_Crawl" />
+					<input type="hidden" name="output" value="xml_no_dtd" />
+					<span class="toplinks">
+						<a href="https://myportal.fhda.edu/cp/home/displaylogin">MyPortal Login</a>&nbsp;&bull;&nbsp;
+						<a href="/news/">News</a>&nbsp;&bull;&nbsp;
+						<a href="/eventscalendar/">Events</a>&nbsp;&bull;&nbsp;
+						<a href="/directory/dir-az.html">A-Z Index</a>&nbsp;&bull;&nbsp;
+						<a href="/directory/">Directories</a>&nbsp;&bull;&nbsp;
+						<a href="/comment.html">Contact</a>&nbsp;
+					</span>	&nbsp;	
+					<label for="q" style="display:none;">Search</label>
+					<input type="text" size="16" name="q" id="q" value=" Search" onclick="ClearIfAppropriate();"  style="height:18px;border:inset 1px #9e7012;"  />
+					<input type="image" name="btnG" src="/template/standard/images/homepage/Go-Button.jpg" onmouseover="this.src='/template/standard/images/homepage/Go-Button_hover.jpg'" onmouseout="this.src='/template/standard/images/homepage/Go-Button.jpg'" style="width: 27px; margin-bottom:-2px;height: 27px;vertical-align:bottom;" alt="Search"  />
+				</form>
+			</div>
+			<!-- TABS MENU -->		
+	<div id="da_menu" class="home"> <!-- navigation-tabs -->
+		<ul id="da_nav">
+			<li class="gold"><a href="/students/"  id="students" >Current<br /> Students</a></li>	
+			<li  class="green"><a href="/outreach/" id="outreach">Future Students <br />&amp; Parents</a></li>
+			<li  class="blue"><a href="/international/" id="international">International Students</a></li>
+			<li  class="maroon"><a href="/faculty/" id="faculty">Faculty <br /> &amp; Staff</a></li>
+			<li  class="purple"><a href="/community/" id="friends">Community,<br />Alumni &amp; Donors</a></li>	
+		</ul>
+	</div>  <!-- //navigation-tabs -->	
+
+<div class="navigation_bar">
+	<ul id="horizontal_bar">
+		<li style="width:16%; display:inline-block; padding-left:8px;">
+			<a href="/about/" onmouseover="showabout();" onmouseout="hideabout();" class="dropdown" >About De Anza</a></li>
+		<li style="width:26%; display:inline-block;text-align:center;">
+			<a href="/admissions/appregmenu.html" onmouseover="showapply();" 
+				onmouseout="hideapply();" class="dropdown" >Admissions & Registration</a></li>
+		<li style="width:24%; display:inline-block;text-align:center;">
+			<a href="/courseinfo/" onmouseover="showclas();" onmouseout="hideclas();"  
+			class="dropdown" >Course Information</a></li>
+		<li style="width:12%; display:inline-block;text-align:center;">
+			<a href="/library/" >Library</a></li>
+		<li style="width:18%; display:inline-block;text-align:right;">
+			<a href="/studentservices/" onmouseover="showstuser();" onmouseout="hidestuser();" 
+			class="dropdown" >Student Services</a></li>
+	</ul>
+</div>
+  		</div> <!-- //da_header_container-->
+		<!-- because the secondtier does not have a content container to make its background white: -->
+		<!-- the padding-top 1 pixel seems to fix an issues in some pages like the 404.html and other that used the same "template" -->
+		<div style="background:#ffffff; padding-top:1px;">
+
+
+
+<!--  === end menu bar include === -->
+
+<div style="clear:both;"></div>  <!-- Don-t remove this! -->
+<!--Start of calendar object div-->
+<div id="cal_div_obj">
+<div id="da_cal_head">
+<div id="da_cal_headleft">
+
+<table class="minical" id="prevmonth">
+<caption><a href="month.php?year=2016&amp;month=06">June 2016</a></caption>
+<thead>
+<tr>
+<th>Sun</th>
+<th>Mon</th>
+<th>Tue</th>
+<th>Wed</th>
+<th>Thu</th>
+<th>Fri</th>
+<th>Sat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="empty">&nbsp;</td>
+<td class="empty">&nbsp;</td>
+<td class="empty">&nbsp;</td>
+<td class="hasevents"><a href="day.php?date=20160601">01</a></td>
+<td class="hasevents"><a href="day.php?date=20160602">02</a></td>
+<td class="hasevents"><a href="day.php?date=20160603">03</a></td>
+<td class="weekend hasevents"><a href="day.php?date=20160604">04</a></td>
+</tr>
+<tr>
+<td class="weekend hasevents"><a href="day.php?date=20160605">05</a></td>
+<td class="hasevents"><a href="day.php?date=20160606">06</a></td>
+<td class="hasevents"><a href="day.php?date=20160607">07</a></td>
+<td class="hasevents"><a href="day.php?date=20160608">08</a></td>
+<td class="hasevents"><a href="day.php?date=20160609">09</a></td>
+<td class="hasevents"><a href="day.php?date=20160610">10</a></td>
+<td class="weekend hasevents"><a href="day.php?date=20160611">11</a></td>
+</tr>
+<tr>
+<td class="weekend"><a href="day.php?date=20160612">12</a></td>
+<td class="hasevents"><a href="day.php?date=20160613">13</a></td>
+<td class="hasevents"><a href="day.php?date=20160614">14</a></td>
+<td class="hasevents"><a href="day.php?date=20160615">15</a></td>
+<td class="hasevents"><a href="day.php?date=20160616">16</a></td>
+<td class="hasevents"><a href="day.php?date=20160617">17</a></td>
+<td class="weekend"><a href="day.php?date=20160618">18</a></td>
+</tr>
+<tr>
+<td class="weekend"><a href="day.php?date=20160619">19</a></td>
+<td class="hasevents"><a href="day.php?date=20160620">20</a></td>
+<td class="hasevents"><a href="day.php?date=20160621">21</a></td>
+<td class="hasevents"><a href="day.php?date=20160622">22</a></td>
+<td class="hasevents"><a href="day.php?date=20160623">23</a></td>
+<td class="hasevents"><a href="day.php?date=20160624">24</a></td>
+<td class="weekend hasevents"><a href="day.php?date=20160625">25</a></td>
+</tr>
+<tr>
+<td class="weekend"><a href="day.php?date=20160626">26</a></td>
+<td class="hasevents"><a href="day.php?date=20160627">27</a></td>
+<td><a href="day.php?date=20160628">28</a></td>
+<td><a href="day.php?date=20160629">29</a></td>
+<td class="hasevents"><a href="day.php?date=20160630">30</a></td>
+<td class="empty">&nbsp;</td>
+<td class="empty">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="title">
+<div id="da_calname" class="date"><span style="padding: 0 0 0 40px;">Events</span><a href="http://m.deanza.edu/eventscalendar/"><img title="The mobile events calendar is available on m.deanza.edu" src="/images/phoneready.png" alt="Smartphone icon" align="right" border="0" height="41" width="40"></a></div><br />
+<span class="date">July 2016</span>
+<span class="user"><br />
+Public Access</span>
+<br /><br />
+<form action="month.php" method="get" name="SelectCategory" class="categories">
+<input type="hidden" name="date" value="20160703" />
+Category: <select name="cat_id" onchange="document.SelectCategory.submit()">
+<option value="" selected="selected">All</option>
+<option value="4">Academic Dates</option>
+<option value="5">Athletics & Recreation</option>
+<option value="13">Community and Civic Engagement</option>
+<option value="1">Cultural Events</option>
+<option value="2">Fine Arts</option>
+<option value="8">General Campus Events</option>
+<option value="12">Holidays</option>
+<option value="11">Performance</option>
+<option value="6">Speaker Series</option>
+<option value="7">Student Activities</option>
+<option value="9">Student Services</option>
+<option value="15">Transfer Events</option>
+</select>
+</form>
+<span id="cat">Category: All</span>
+</div>
+<div id="da_cal_headright">
+
+<table class="minical" id="nextmonth">
+<caption><a href="month.php?year=2016&amp;month=08">August 2016</a></caption>
+<thead>
+<tr>
+<th>Sun</th>
+<th>Mon</th>
+<th>Tue</th>
+<th>Wed</th>
+<th>Thu</th>
+<th>Fri</th>
+<th>Sat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="empty">&nbsp;</td>
+<td><a href="day.php?date=20160801">01</a></td>
+<td><a href="day.php?date=20160802">02</a></td>
+<td><a href="day.php?date=20160803">03</a></td>
+<td><a href="day.php?date=20160804">04</a></td>
+<td><a href="day.php?date=20160805">05</a></td>
+<td class="weekend"><a href="day.php?date=20160806">06</a></td>
+</tr>
+<tr>
+<td class="weekend"><a href="day.php?date=20160807">07</a></td>
+<td><a href="day.php?date=20160808">08</a></td>
+<td><a href="day.php?date=20160809">09</a></td>
+<td><a href="day.php?date=20160810">10</a></td>
+<td><a href="day.php?date=20160811">11</a></td>
+<td><a href="day.php?date=20160812">12</a></td>
+<td class="weekend"><a href="day.php?date=20160813">13</a></td>
+</tr>
+<tr>
+<td class="weekend"><a href="day.php?date=20160814">14</a></td>
+<td><a href="day.php?date=20160815">15</a></td>
+<td><a href="day.php?date=20160816">16</a></td>
+<td><a href="day.php?date=20160817">17</a></td>
+<td><a href="day.php?date=20160818">18</a></td>
+<td><a href="day.php?date=20160819">19</a></td>
+<td class="weekend"><a href="day.php?date=20160820">20</a></td>
+</tr>
+<tr>
+<td class="weekend"><a href="day.php?date=20160821">21</a></td>
+<td><a href="day.php?date=20160822">22</a></td>
+<td><a href="day.php?date=20160823">23</a></td>
+<td><a href="day.php?date=20160824">24</a></td>
+<td><a href="day.php?date=20160825">25</a></td>
+<td><a href="day.php?date=20160826">26</a></td>
+<td class="weekend"><a href="day.php?date=20160827">27</a></td>
+</tr>
+<tr>
+<td class="weekend"><a href="day.php?date=20160828">28</a></td>
+<td><a href="day.php?date=20160829">29</a></td>
+<td><a href="day.php?date=20160830">30</a></td>
+<td><a href="day.php?date=20160831">31</a></td>
+<td class="empty">&nbsp;</td>
+<td class="empty">&nbsp;</td>
+<td class="empty">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div> <!-- End of da_cal_head -->
+ <div id="date_navs">
+<form action="day.php" method="get" name="SelectDay" id="dayform">
+<input type="submit" value="Today" />
+</form>
+<form action="week.php" method="get" name="SelectWeek" id="weekform">
+<select name="date" id="weekselect" onchange="document.SelectWeek.submit()">
+<option value="20160515">May 15 - May 21</option>
+<option value="20160522">May 22 - May 28</option>
+<option value="20160529">May 29 - Jun 4</option>
+<option value="20160605">Jun 5 - Jun 11</option>
+<option value="20160612">Jun 12 - Jun 18</option>
+<option value="20160619">Jun 19 - Jun 25</option>
+<option value="20160626">Jun 26 - Jul 2</option>
+<option value="20160703" selected="selected">Jul 3 - Jul 9</option>
+<option value="20160710">Jul 10 - Jul 16</option>
+<option value="20160717">Jul 17 - Jul 23</option>
+<option value="20160724">Jul 24 - Jul 30</option>
+<option value="20160731">Jul 31 - Aug 6</option>
+<option value="20160807">Aug 7 - Aug 13</option>
+<option value="20160814">Aug 14 - Aug 20</option>
+<option value="20160821">Aug 21 - Aug 27</option>
+</select>
+<input type="submit" value="Week" />
+</form>
+
+<form action="month.php" method="get" name="SelectMonth" id="monthform">
+<select name="date" id="monthselect" onchange="document.SelectMonth.submit()">
+<option value="20150801">Aug 2015</option>
+<option value="20150901">Sep 2015</option>
+<option value="20151001">Oct 2015</option>
+<option value="20151101">Nov 2015</option>
+<option value="20151201">Dec 2015</option>
+<option value="20160101">Jan 2016</option>
+<option value="20160201">Feb 2016</option>
+<option value="20160301">Mar 2016</option>
+<option value="20160401">Apr 2016</option>
+<option value="20160501">May 2016</option>
+<option value="20160601">Jun 2016</option>
+<option value="20160701" selected="selected">Jul 2016</option>
+<option value="20160801">Aug 2016</option>
+<option value="20160901">Sep 2016</option>
+<option value="20161001">Oct 2016</option>
+<option value="20161101">Nov 2016</option>
+<option value="20161201">Dec 2016</option>
+<option value="20170101">Jan 2017</option>
+<option value="20170201">Feb 2017</option>
+<option value="20170301">Mar 2017</option>
+<option value="20170401">Apr 2017</option>
+<option value="20170501">May 2017</option>
+<option value="20170601">Jun 2017</option>
+<option value="20170701">Jul 2017</option>
+<option value="20170801">Aug 2017</option>
+</select>
+<input type="submit" value="Month" />
+</form>
+
+<form action="year.php" method="get" name="SelectYear" id="yearform">
+<select name="year" id="yearselect" onchange="document.SelectYear.submit()">
+<option value="2012">2012</option>
+<option value="2013">2013</option>
+<option value="2014">2014</option>
+<option value="2015">2015</option>
+<option value="2016" selected="selected">2016</option>
+<option value="2017">2017</option>
+<option value="2018">2018</option>
+<option value="2019">2019</option>
+</select>
+<input type="submit" value="Year" />
+</form>
+<a id="date_nav_search" title="Search" href="search.php">Search</a>
+<a id="date_nav_prtfriend" title="Printer Friendly" href="/eventscalendar/month.php?friendly=1" target="cal_print_friendly">Printer Friendly</a>
+<a id="date_nav_login" title="Link to Events Calendar login" href="login.php"><strong>How to Add an Event</strong></a>
+
+</div><!-- end of date_navs div -->
+<div style="clear: both; margin: 0; padding: 0;"></div>
+<table class="main" style="clear:both;" cellspacing="0" cellpadding="0">
+<tr>
+   <th>Sun</th>
+  <th>Mon</th>
+ <th>Tue</th>
+ <th>Wed</th>
+ <th>Thu</th>
+ <th>Fri</th>
+ <th>Sat</th>
+ </tr>
+<tr>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td><a class="dayofmonth" href="day.php?date=20160701">01</a><br />
+</td>
+<td class="weekend"><a class="dayofmonth" href="day.php?date=20160702">02</a><br />
+</td>
+</tr>
+<tr>
+<td class="today weekend"><a class="dayofmonth" href="day.php?date=20160703">03</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160704">04</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160705">05</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160706">06</a><br />
+<a title="View this entry" class="entry" href="view_entry.php?id=3364&amp;date=20160706" onmouseover="window.status='View this entry'; show(event, 'eventinfo-3364-0'); return true;" onmouseout="window.status=''; hide('eventinfo-3364-0'); return true;"><img src="circle.gif" class="bullet" alt="View this entry" />11:30 a.m.&raquo;&nbsp;Super Soul Bros.</a>
+<br /></td>
+<td><a class="dayofmonth" href="day.php?date=20160707">07</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160708">08</a><br />
+</td>
+<td class="weekend"><a class="dayofmonth" href="day.php?date=20160709">09</a><br />
+</td>
+</tr>
+<tr>
+<td class="weekend"><a class="dayofmonth" href="day.php?date=20160710">10</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160711">11</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160712">12</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160713">13</a><br />
+<a title="View this entry" class="entry" href="view_entry.php?id=3365&amp;date=20160713" onmouseover="window.status='View this entry'; show(event, 'eventinfo-3365-1'); return true;" onmouseout="window.status=''; hide('eventinfo-3365-1'); return true;"><img src="circle.gif" class="bullet" alt="View this entry" />11:30 a.m.&raquo;&nbsp;Miki's Jazz Banda</a>
+<br /></td>
+<td><a class="dayofmonth" href="day.php?date=20160714">14</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160715">15</a><br />
+</td>
+<td class="weekend"><a class="dayofmonth" href="day.php?date=20160716">16</a><br />
+</td>
+</tr>
+<tr>
+<td class="weekend"><a class="dayofmonth" href="day.php?date=20160717">17</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160718">18</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160719">19</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160720">20</a><br />
+<a title="View this entry" class="entry" href="view_entry.php?id=3366&amp;date=20160720" onmouseover="window.status='View this entry'; show(event, 'eventinfo-3366-2'); return true;" onmouseout="window.status=''; hide('eventinfo-3366-2'); return true;"><img src="circle.gif" class="bullet" alt="View this entry" />11:30 a.m.&raquo;&nbsp;Balloons and Cotton Candy </a>
+<br /></td>
+<td><a class="dayofmonth" href="day.php?date=20160721">21</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160722">22</a><br />
+</td>
+<td class="weekend"><a class="dayofmonth" href="day.php?date=20160723">23</a><br />
+</td>
+</tr>
+<tr>
+<td class="weekend"><a class="dayofmonth" href="day.php?date=20160724">24</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160725">25</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160726">26</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160727">27</a><br />
+<a title="View this entry" class="entry" href="view_entry.php?id=3367&amp;date=20160727" onmouseover="window.status='View this entry'; show(event, 'eventinfo-3367-3'); return true;" onmouseout="window.status=''; hide('eventinfo-3367-3'); return true;"><img src="circle.gif" class="bullet" alt="View this entry" />11:30 a.m.&raquo;&nbsp;Free Finals Supplies</a>
+<br /></td>
+<td><a class="dayofmonth" href="day.php?date=20160728">28</a><br />
+</td>
+<td><a class="dayofmonth" href="day.php?date=20160729">29</a><br />
+</td>
+<td class="weekend"><a class="dayofmonth" href="day.php?date=20160730">30</a><br />
+</td>
+</tr>
+<tr>
+<td class="weekend"><a class="dayofmonth" href="day.php?date=20160731">31</a><br />
+</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+</table>
+<br />
+<dl id="eventinfo-3364-0" class="popup">
+<dt>Time:</dt>
+<dd>11:30 a.m. - 1:00 p.m.</dd>
+<dt>Description:</dt>
+<dd>The music of Super Soul Bros. blends jazz &amp; funk with the familiar melodies of classic video games.</dd>
+</dl>
+<dl id="eventinfo-3365-1" class="popup">
+<dt>Time:</dt>
+<dd>11:30 a.m. - 1:00 p.m.</dd>
+<dt>Description:</dt>
+<dd>Miki (a former De Anza student!) sings English, Portuguese, Spanish, Italian and Japanese in swing, Bossa Nova, Latin, blues, be bop and more with her jazz musician friends. </dd>
+</dl>
+<dl id="eventinfo-3366-2" class="popup">
+<dt>Time:</dt>
+<dd>11:30 a.m. - 1:00 p.m.</dd>
+<dt>Description:</dt>
+<dd>Come out to the quad for free balloons and cotton candy! </dd>
+</dl>
+<dl id="eventinfo-3367-3" class="popup">
+<dt>Time:</dt>
+<dd>11:30 a.m. - 1:00 p.m.</dd>
+<dt>Description:</dt>
+<dd>Free finals supplies available in the quad! </dd>
+</dl>
+
+<br />
+
+<div id="trailer">
+<div id="menu">
+
+
+<!-- VIEWS -->
+
+<!-- REPORTS -->
+
+<!-- CURRENT USER -->
+<br />
+<br /><br />
+</div>
+</div>
+<!-- /TRAILER -->
+</div>
+<!--End of cal_div_obj div-->
+
+</div> <!-- end of the white background div -->
+<!=============== PRINTABLE VERSION SCRIPT ============= -->
+<!-- PRINT VERSION TOOLBAR -->
+<!=============== END PRINTABLE VERSION SCRIPT ============= -->
+<!-- footer02.inc -->
+<div id="footer">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" summary="Text Links">
+      <tr> 
+        <td nowrap="nowrap" align="left" class="bar">Page Updated August 19, 2013</td>
+            <div class="print-version" align="right"><a href="javascript:void(0);" OnClick="window.open('?printable=version','PrintPreview','height=600,width=740,status=yes,toolbar=yes,menubar=yes,scrollbars=yes,location=no'); return false;" >Printable Version</a>&nbsp;&bull;&nbsp;</div>
+            <div class="link-to-top" align="right"><a href="#top" title="Link to the top of the page">Top of the page</a></div>
+        <td nowrap="nowrap" align="right" class="bar">De Anza College. Just What You Need.</td>
+      </tr>     
+      <tr>
+        <td colspan="2" align="center"><br />
+            	<div align="center" class="footer_address">
+		 21250 Stevens Creek Blvd.  &#9642;  Cupertino, CA 95014  
+	</div>
+
+    <p style="margin:0px;line-height:14px;"> 
+		<a class="smlink" href="/students/">Current Students</a>   &#9642;  
+		<a class="smlink" href="/outreach/">Future Students &amp; Parents</a>   &#9642; 
+		<a class="smlink" href="/international/">International Students</a>  &#9642;  
+		<a class="smlink" href="/faculty/">Faculty &amp; Staff</a>   &#9642;   
+		<a class="smlink" href="/community/">Friends &amp; Community</a>   <br />  
+		
+		<a class="smlink" href="/about/">About De Anza</a>  &#9642;
+		<a class="smlink" href="/admissions/appregmenu.html">Admissions &amp; Registration</a>	 &#9642;
+		<a class="smlink" href="/courseinfo/">Course Information</a>  &#9642;
+		<a class="smlink" href="/library/">Library</a>  &#9642;
+		<a class="smlink" href="/studentservices/">Student Services</a>  <br />
+		
+		
+		<a class="smlink"  style="line-height:22px;" href="http://www.fhda.edu">Foothill-De Anza Community College District</a> <br />		
+		<a class="smlink" style="line-height:22px;" href="/policies/privacy.html">Privacy Statement</a>  
+	</p>
+  
+	<br /> 
+        </td>
+      </tr>
+    </table>
+</div>
+<br /><br />
+
+<!-- Drop-down menus for the horizontal navigation bar at the top of the page : dropdown_menu.inc -->
+<!-- About -->
+<div class='about' id='about' onmouseover='showabout();' onmouseout='hideabout();'>
+	<ul class='menu'>
+	<li><a class='menu'  href='/about/aboutus.html'>About Us</a></li>
+	<li><a class='menu'  href='/about/facts.html'>De Anza Fast Facts</a></li>
+	<li><a class='menu'  href='/about/missionandvalues.html'>Our Mission and Values</a></li>
+	<li><a class='menu'  href='/accreditation/'>Accreditation</a></li>
+	<li><a class='menu'  href='/map/'>Campus Map</a></li>
+	<li><a class='menu'  href='/parking/'>Parking</a></li>
+	<li><a class='menu'  href='/vtour/'>Campus Virtual Tour</a></li>
+	<li><a class='menu'  href='/about/campustour.html'>Sign Up for a Guided Tour</a></li>
+	<li><a class='menu'  href='/president/'>Office of the President</a></li>
+	<li><a class='menu'  href='/instruction/'>Office of Instruction</a></li>
+    <li><a class='menu'  href='/studentservices/'>Office of Student Services</a></li>
+    <li><a class='menu'  href='/finance/'>Office of Finance</a></li>
+	<li><a class='menu'  href='/outreach/'>Outreach &amp; Relations with Schools</a></li>
+	<li><a class='menu'  href='/about/jobs.html'>Job Opportunities</a></li>
+	<li><a class='menu'  href='http://www.foothill.edu'>Foothill College</a></li>
+	<li><a class='menu'  href='http://www.fhda.edu/'>Foothill-De Anza Community College District</a></li>
+	</ul>
+</div>
+<!-- Apply & Register -->
+<div class='apply' id='apply' onmouseover='showapply();' onmouseout='hideapply();'>
+	<ul class='menu'>
+    <li><a href='/registration/current.html' class='menu arrow' onmouseover='showadinfo();' onmouseout='hideadinfo();'>How to Apply and Register</a></li>
+    <li><a href='/registration/' class='menu arrow' onmouseover='showreginfo();' onmouseout='hidereginfo();'>Registration Info</a></li>
+	<li><a class='menu' href='/registration/cashier/'>Fees and Refunds</a></li>
+	<li><a class='menu' href='/financialaid/'>Financial Aid</a></li>
+	<li><a class='menu' href='/counseling/'>Counseling and Advising</a></li>
+	<li><a class='menu' href='/transfer/'>Transfer Planning</a></li>
+	<li><a class='menu' href='/admissions/placement/'>Placement Tests</a></li>
+	<li><a class='menu' href='/registration/forms.html'>Student Forms</a></li>
+	<li><a class='menu' href='/registration/transcript.html'>Transcripts</a></li>
+	<li><a class='menu' href='/registration/enrollverify.html'>Verify Degree / Enrollment</a></li>
+	<li>
+	<hr size='1' /></li>
+	<li><a class='menu' href='/registration/myinfo.html'><img src='/template/standard/images/homepage/myportal-logo-101x31white.gif' border='0' alt='My Portal' width='101' height='31' align='middle' /></a></li>
+	<li><a class='menu' href='/registration/myinfo.html'>Apply &amp; Register for Classes</a></li>
+	</ul>
+</div>
+
+<!-- Apply & Register  Admissions Info -->
+<div class='reginfo2' id='reginfo2' onmouseover='showadinfo();' onmouseout='hideadinfo();'>
+	<ul class='menu'>
+    <li><a class='menu' href='/registration/current.html'>Getting Started &bull; How to Enroll</a></li>
+	<li><a class='menu' href='/admissions/admreq.html'>Admission Requirements</a></li>
+	<li><a class='menu' href='/admissions/residency.html'>Residency Requirements</a></li>
+	<li><a class='menu' href='/admissions/policies.html'>College Policies and Guidelines</a></li>
+	<li><a class='menu' href='/admissions/faq.html'>Frequently Asked Questions</a></li>
+	<li><a class='menu' href='/admissions/contact.html'>Admissions and Records Office</a></li>
+	</ul>
+</div>
+
+<!-- Apply & Register  Registration Info -->
+<div class='reginfo' id='reginfo' onmouseover='showreginfo();' onmouseout='hidereginfo();'>
+	<ul class='menu'>
+    <li><a class='menu' href='/registration/'>Register for Classes</a></li>
+	<li><a class='menu' href='/calendar/'>Important Dates</a></li>
+	<li><a class='menu' href='/registration/add-drop.html'>Adding/Dropping Classes</a></li>
+	<li><a class='menu' href='/registration/waitinglists.html'>Waiting Lists</a></li>
+	<li><a class='menu' href='/registration/password.html'>MyPortal Password</a></li>
+	<li><a class='menu' href='/registration/photoid.html'>Photo ID</a></li>
+	</ul>
+</div>
+
+<!-- Course Information (Classes) -->
+<div class='clas' id='clas' onmouseover='showclas();' onmouseout='hideclas();'>
+	<ul class='menu'>
+	<li><a class='menu arrow' href='/directory/dir-depts.html' onmouseover='showdivdepts();' onmouseout='hidedivdepts();'>Instructional Divisions &amp; Depts.</a>
+		
+		</li>
+	<li><a class='menu' href='/schedule/'>Schedule of Classes</a></li>
+	<li><a class='menu' href='/calendar/'>Academic Calendar/Final Exams</a></li>
+	<li><a class='menu' href='/directory/faculty-websites.html'>Faculty Websites</a></li>
+	<li><a class='menu' href='/courseinfo/majors.html'>Degrees and Programs</a></li>
+	<li><a class='menu' href='/publications/catalog/'>College Catalog</a></li>
+	<li><a class='menu' href='/online-ed/'>Online Education</a></li>
+    <li><a class='menu' href='https://catalyst.deanza.edu/'>Catalyst Login</a></li>
+	<li><a class='menu' href='http://communityeducation.fhda.edu/'>Community Ed. Short Courses</a></li>
+	<li><a class='menu' href='/workforceed/'>Workforce Education</a></li>
+	</ul>
+</div>
+
+<!-- Course Information Divisions -->
+<div class='divdepts' id='divdepts' onmouseover='showdivdepts();' onmouseout='hidedivdepts();'>
+	<ul class='menu'>
+	<li><a class='menu' href='/bhes/'>Biological, Health and Environmental Sciences</a></li>
+	<li><a class='menu' href='/buscs/'>Business, Computer Science and Applied Technologies</a></li>
+	<li><a class='menu' href='/counseling/'>Counseling</a></li>
+	<li><a class='menu' href='/creativearts/'>Creative Arts</a></li>
+	<li><a class='menu' href='/dsps/'>Disability Support Programs &amp; Services (DSPS)</a></li>
+	<li><a class='menu' href='/iis/'>Intercultural/International Studies</a></li>
+	<li><a class='menu' href='/languagearts/'>Language Arts</a></li>
+	<li><a class='menu' href='/learningresources/'>Learning Resources</a></li>
+	<li><a class='menu' href='/pe-athletics/'>Physical Education/Athletics</a></li>
+	<li><a class='menu' href='/psme/'>Physical Science/Math/Engineering</a></li>
+	<li><a class='menu' href='/socialsciences/'>Social Sciences and Humanities</a></li>
+	</ul>
+</div>
+
+<!-- Student Services -->
+<div class='stuser' id='stuser' onmouseover='showstuser();' onmouseout='hidestuser();'>
+	<ul class='menu'>
+	<li><a class='menu' href='/admissions/contact.html'>Admissions and Records</a></li>
+    <li><a class='menu' href='/admissions/placement/'>Assessment Center</a></li>	
+	<li><a class='menu' href='/bookstore/'>Bookstore</a></li>
+	<li><a class='menu' href='/counseling/career/'>Career Services</a></li>
+	<li><a class='menu' href='/child/'>Child Care</a></li>
+	<li><a class='menu' href='/counseling/'>Counseling and Advising</a></li>
+	<li><a class='menu' href='/diningservices/'>Dining Services</a></li>
+	<li><a class='menu' href='/dsps/'>Disability Support Programs &amp; Services (DSPS)</a></li>
+	<li><a class='menu' href='/eops/'>EOPS</a></li>
+	<li><a class='menu' href='/financialaid/'>Financial Aid</a></li>
+	<li><a class='menu' href='/healthservices/'>Health Services</a></li>
+	<li><a class='menu' href='/honors/'>Honors Program</a></li>
+	<li><a class='menu' href='/learningcommunities/'>Learning Communities</a></li>
+    <li><a class='menu' href='/oti/'>Occupational Training Institute</a></li>
+	<li><a class='menu' href='/collegelife/'>Office of College Life</a></li>
+	<li><a class='menu' href='/studenthandbook/'>Student Handbook</a></li>
+	<li><a class='menu' href='/studentsuccess/'>Student Success Center (Tutoring)</a></li>
+	<li><a class='menu' href='/registration/transcript.html'>Transcript Request</a></li>
+	<li><a class='menu' href='/transfer/'>Transfer Planning</a></li>
+	<li><a class='menu' href='/veterans/'>Veteran Services</a></li>
+	</ul>
+</div>
+
+
+       
+</div> <!-- End of centered container div -->  
+
+  <div class="bottom_main_container">
+            <!-- THIS JUST CONTAINS THE LITTLE YELLOW SQUARES IMAGE IN THE BOTTOM OF THE PAGE-->
+  </div> <!-- //bottom_main_container -->    
+  
+</div> <!-- //top_main_container -->
+
+<!-- Google Analytics, installed by De Anza Web Team -->
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-2729974-1");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+<!-- End Google Analytics -->
+</body>
+</html>
