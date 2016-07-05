@@ -1,7 +1,7 @@
 import logging
 import docx
 import datetime
-from . import clean
+from .clean import iso_time
 import json
 
 WORD_DOC = docx.Document("res/ClubMeetingsSpring2016.docx")
@@ -19,11 +19,11 @@ def main():
                     "name": row.cells[NAME_INDEX].text.strip(),
                     "days": extract_days(row.cells[DAYS_INDEX].text),
                     "dates": extract_dates(row.cells[DATES_INDEX].text),
-                    "start_time": clean.time(row.cells[TIME_INDEX].text.split(" - ")[0]),
+                    "start_time": iso_time(row.cells[TIME_INDEX].text.split(" - ")[0]),
                     "location": row.cells[LOCATION_INDEX].text.strip()
                 }
                 try:
-                    club["end_time"] = clean.time(row.cells[TIME_INDEX].text.split(" - ")[1])
+                    club["end_time"] = iso_time(row.cells[TIME_INDEX].text.split(" - ")[1])
                 except IndexError:
                     club["end_time"] = ''
                 clubs.append(club)
@@ -33,7 +33,7 @@ def main():
 
 def extract_days(days):
     # Keep only alphanumeric characters, and whitespace for splitting the string into list items
-    days_array = ''.join(char for char in days if char.isalnum() or char.isspace()).split()
+    days_array = ''.join(c for c in days if c.isalnum() or c.isspace()).split()
     for i, day in enumerate(days_array):
         days_array[i] = days_array[i][0:3].capitalize()
 

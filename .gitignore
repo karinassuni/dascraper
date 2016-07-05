@@ -1,4 +1,8 @@
-# Generated files
+# Bytecode
+*.pyc
+__pycache__/
+
+# Generated output
 clubs.json
 calendar.html
 calendarevents.json
