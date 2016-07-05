@@ -1,4 +1,3 @@
-import sys
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -54,27 +53,17 @@ def parse_event_page(event_html):
     return event
 
 def main():
-    def download_calendar_html():
-        THIS_MONTH = BASE_URL + "month.php"
-        print "Requesting {}...".format(THIS_MONTH)
-        r = requests.get(THIS_MONTH)
-        with open("calendar.html", 'w') as outfile:
-            outfile.write(r.text)
-        print "This month's calendar downloaded."
+    THIS_MONTH = BASE_URL + "month.php"
+    print "Requesting {}...".format(THIS_MONTH)
 
-        return r.text
+    r = requests.get(THIS_MONTH)
+    with open("calendar.html", 'w') as outfile:
+        outfile.write(r.text)
+    print "This month's calendar downloaded."
 
-    def save_events_json(events):
-        with open("calendar_events.json", 'w') as outfile:
-            json.dump(events, outfile)
+    with open("calendar_events.json", 'w') as outfile:
+        json.dump(find_calendar_events(r.text), outfile)
 
-    if len(sys.argv) == 2:
-        save_events_json(find_calendar_events(sys.argv[1]))
-    elif len(sys.argv) == 1:
-        save_events_json(find_calendar_events(download_calendar_html()))
-    else:
-        print "Invalid argument list. Exiting..."
-        sys.exit(2)
     print "Parsing complete! Saved to calendar_events.json."
 
 if __name__ == "__main__":
