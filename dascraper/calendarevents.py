@@ -1,7 +1,8 @@
+import logging
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
-from da_club_spreadsheet_scraper import clean_time
+from . import clean
 import json
 
 BASE_URL = "https://www.deanza.edu/eventscalendar/"
@@ -45,8 +46,8 @@ def parse_event_page(event_html):
             if field_name == "date":
                 event["date"] = datetime.strptime(field_value, "%A, %B %d, %Y").date().isoformat()
             elif field_name == "time":
-                event["start_time"] = clean_time(field_value.split('-')[0])
-                event["end_time"] = clean_time(field_value.split('-')[1])
+                event["start_time"] = clean.time(field_value.split('-')[0])
+                event["end_time"] = clean.time(field_value.split('-')[1])
             else:
                 event[field_name] = field_value
 
@@ -54,17 +55,17 @@ def parse_event_page(event_html):
 
 def main():
     THIS_MONTH = BASE_URL + "month.php"
-    print "Requesting {}...".format(THIS_MONTH)
+    logging.debug("Requesting {}...".format(THIS_MONTH))
 
     r = requests.get(THIS_MONTH)
     with open("calendar.html", 'w') as outfile:
         outfile.write(r.text)
-    print "This month's calendar downloaded."
+    logging.debug("Downloaded this month's calendar.")
 
-    with open("calendar_events.json", 'w') as outfile:
+    with open("calendarevents.json", 'w') as outfile:
         json.dump(find_calendar_events(r.text), outfile)
 
-    print "Parsing complete! Saved to calendar_events.json."
+    logging.debug("Parsing complete! Saved to calendar_events.json.")
 
 if __name__ == "__main__":
     main()
