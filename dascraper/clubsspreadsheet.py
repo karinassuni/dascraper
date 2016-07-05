@@ -1,16 +1,19 @@
+import os
 import logging
 import docx
 import datetime
 from .clean import iso_time
 import json
 
-WORD_DOC = docx.Document("res/ClubMeetingsSpring2016.docx")
+WORD_DOC = docx.Document(os.path.relpath("res/ClubMeetingsSpring2016.docx"))
 
 def main():
     START_INDEX = 3
     NAME_INDEX, DAYS_INDEX, DATES_INDEX, TIME_INDEX, LOCATION_INDEX = range(1, 6)
     clubs = []
+
     logging.debug("Parsing the club spreadsheet...")
+
     for table in WORD_DOC.tables:
         for row in table.rows[START_INDEX:]:
             club_is_active = bool(row.cells[DATES_INDEX].text.strip())
@@ -27,15 +30,18 @@ def main():
                 except IndexError:
                     club["end_time"] = ''
                 clubs.append(club)
+
     with open("clubs.json", 'w') as outfile:
         json.dump(clubs, outfile)
+
     logging.debug("Finished parsing the club spreadsheet.")
 
 def extract_days(days):
-    # Keep only alphanumeric characters, and whitespace for splitting the string into list items
-    days_array = ''.join(c for c in days if c.isalnum() or c.isspace()).split()
+    days = ''.join(c for c in days if c.isalnum() or c.isspace())
+    days_array = days.split()
+
     for i, day in enumerate(days_array):
-        days_array[i] = days_array[i][0:3].capitalize()
+        days_array[i] = day[0:3].capitalize()
 
     return days_array
 
@@ -46,11 +52,15 @@ def extract_dates(dates):
         2016-04-08, 2016-04-15, 2016-04-22, 2016-04-29, ...
     """
 
-    month = ''
     WORD_DOC_YEAR = WORD_DOC.tables[0].cell(0,3).text.split()[0]
+
     # Remove all whitespace from dates string
-    dates_array = ''.join(dates.split()).split(',')
-    # Since we need to modify each list element as we loop, we need to access indicies
+    dates = ''.join(dates.split())
+
+    dates_array = dates.split(',')
+    month = ''
+
+    # Since we're modifying the array while looping, we need the index
     for i, date in enumerate(dates_array):
         date_has_month = bool('/' in date)
         if date_has_month:

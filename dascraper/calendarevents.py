@@ -10,10 +10,11 @@ BASE_URL = "https://www.deanza.edu/eventscalendar/"
 
 def parse_calendar(html):
     calendar_soup = BeautifulSoup(html, "lxml")
-    events = []
     calendar = calendar_soup.find("table", class_="main")
-    # Skip the first tr, which is the header
-    for tr in calendar.find_all("tr")[1:]:
+    START_ROW = 1
+    events = []
+
+    for tr in calendar.find_all("tr")[START_ROW:]:
         for td in tr.find_all("td"):
             for a in td.find_all("a"):
                 # "class" is a special multi-valued attribute, so it's contained in a list
@@ -25,7 +26,8 @@ def parse_calendar(html):
 
 def parse_event(html):
     event_soup = BeautifulSoup(html, "lxml")
-    FIELD_ROWS = ["description", "date", "time", "location", "sponsor"]
+    DESIRED_ROWS = ["description", "date", "time", "location", "sponsor"]
+
     event = {
         "name": event_soup.find(id="cal_div_obj").h2.get_text().strip(),
         "source": "DA Calendar"
@@ -34,7 +36,7 @@ def parse_event(html):
     for tr in event_soup.find("table").find_all("tr"):
         raw_field_name = tr.contents[0].get_text()
         field_name = ''.join(c for c in raw_field_name.lower() if c.isalpha())
-        if field_name in FIELD_ROWS:
+        if field_name in DESIRED_ROWS:
             field_value = tr.contents[1].get_text().strip()
             if field_name == "date":
                 event["date"] = (
