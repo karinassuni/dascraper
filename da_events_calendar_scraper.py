@@ -1,6 +1,8 @@
 import sys
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
+from da_club_spreadsheet_scraper import clean_time
 import json
 
 BASE_URL = "https://www.deanza.edu/eventscalendar/"
@@ -31,17 +33,23 @@ find_calendar_events.this_month = True
 
 def parse_event_page(event_html):
     event_soup = BeautifulSoup(event_html, "lxml")
-    EVENT_FIELDS = ["Description:", "Date:", "Time:", "Location:", "Sponsor:"]
+    FIELD_ROWS = ["description", "date", "time", "location", "sponsor"]
     event = {
-        "name": event_soup.find(id="cal_div_obj").h2.get_text(),
+        "name": event_soup.find(id="cal_div_obj").h2.get_text().strip(),
         "source": "DA Calendar"
     }
 
     for tr in event_soup.find("table").find_all("tr"):
-        field_name = tr.contents[0].get_text().strip()
-        if field_name in EVENT_FIELDS:
+        field_name = tr.contents[0].get_text().lower().strip()[:-1]
+        if field_name in FIELD_ROWS:
             field_value = tr.contents[1].get_text().strip()
-            event[field_name[:-1].lower()] = field_value
+            if field_name == "date":
+                event["date"] = datetime.strptime(field_value, "%A, %B %d, %Y").date().isoformat()
+            elif field_name == "time":
+                event["start_time"] = clean_time(field_value.split('-')[0])
+                event["end_time"] = clean_time(field_value.split('-')[1])
+            else:
+                event[field_name] = field_value
 
     return event
 
