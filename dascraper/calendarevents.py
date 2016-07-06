@@ -3,8 +3,8 @@ import logging
 import json
 import requests
 from bs4 import BeautifulSoup
-from .clean import iso_time
 from collections import namedtuple
+from dascraper.clean import iso_time
 
 BASE_URL = "https://www.deanza.edu/eventscalendar/"
 
@@ -59,7 +59,7 @@ def extract_calendar_events(url, *data):
         r = requests.get(url, data)
     else:
         r = requests.get(url)
-    logging.debug("Downloaded {}.".format(url))
+    logging.debug("Downloaded {}".format(url))
 
     return parse_calendar(r.text)
 
@@ -75,7 +75,7 @@ def main():
     with open("calendarevents.json", 'w') as outfile:
         json.dump(this_month_events + next_month_events, outfile)
 
-    logging.debug("Parsing complete! Saved to calendarevents.json.")
+    logging.debug("Parsing complete! Saved to calendarevents.json")
 
 if __name__ == "__main__":
     main()

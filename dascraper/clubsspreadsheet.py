@@ -3,11 +3,14 @@ import docx
 import logging
 import json
 import os
-from .clean import iso_time
+from dascraper.clean import iso_time
 
-WORD_DOC = docx.Document(os.path.relpath("res/ClubMeetingsSpring2016.docx"))
+# Path arguments in os.path are relative to the present working directory
+# (the directory from where the module is called), so use the unchanging
+# absolute path to the directory containing this file via `__file__`
+WORD_DOC = docx.Document(os.path.join(os.path.dirname(__file__), os.path.relpath("res/ClubMeetingsSpring2016.docx")))
 
-def main():
+def parse():
     START_INDEX = 3
     NAME_INDEX, DAYS_INDEX, DATES_INDEX, TIME_INDEX, LOCATION_INDEX = range(1, 6)
     clubs = []
@@ -31,10 +34,8 @@ def main():
                     club["end_time"] = ''
                 clubs.append(club)
 
-    with open("clubs.json", 'w') as outfile:
-        json.dump(clubs, outfile)
-
-    logging.debug("Finished parsing the club spreadsheet.")
+    logging.debug("Finished parsing the club spreadsheet")
+    return clubs
 
 def extract_days(days):
     days = ''.join(c for c in days if c.isalnum() or c.isspace())
@@ -70,10 +71,14 @@ def extract_dates(dates):
         try:
             dates_array[i] = datetime.date(int(WORD_DOC_YEAR), int(month), int(date)).isoformat()
         except ValueError:
-            logging.exception("Invalid date in spreadsheet.")
+            logging.exception("Invalid date in spreadsheet")
             continue
 
     return dates_array
+
+def main():
+    with open("clubs.json", 'w') as o:
+        json.dump(parse(), o)
 
 if __name__ == "__main__":
     main()
