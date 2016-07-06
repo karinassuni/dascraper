@@ -22,21 +22,22 @@ def parse():
 
     for table in WORD_DOC.tables:
         for row in table.rows[START_INDEX:]:
-            club_is_active = bool(row.cells[DATES_INDEX].text.strip())
+            row_cells = row.cells
+            club_is_active = bool(row_cells[DATES_INDEX].text.strip())
             if club_is_active:
                 club = {
-                    "name": row.cells[NAME_INDEX].text.strip(),
+                    "name": row_cells[NAME_INDEX].text.strip(),
                     "days": extract_days(
-                        row.cells[DAYS_INDEX].text),
+                        row_cells[DAYS_INDEX].text),
                     "dates": extract_dates(
-                        row.cells[DATES_INDEX].text),
+                        row_cells[DATES_INDEX].text),
                     "start_time": iso_time(
-                        row.cells[TIME_INDEX].text.split(" - ")[0]),
-                    "location": row.cells[LOCATION_INDEX].text.strip()
+                        row_cells[TIME_INDEX].text.split(" - ")[0]),
+                    "location": row_cells[LOCATION_INDEX].text.strip()
                 }
                 try:
                     club["end_time"] = iso_time(
-                        row.cells[TIME_INDEX].text.split(" - ")[1])
+                        row_cells[TIME_INDEX].text.split(" - ")[1])
                 except IndexError:
                     club["end_time"] = ''
                 clubs.append(club)
@@ -49,8 +50,8 @@ def extract_days(days):
     # Keep spaces, for splitting the string
     clean_days = ''.join(c for c in days if c.isalpha() or c.isspace()).split()
 
-    for i, day in enumerate(days_array):
-        days_array[i] = day[0:3].capitalize()
+    for i, day in enumerate(clean_days):
+        clean_days[i] = day[0:3].capitalize()
 
     return clean_days
 

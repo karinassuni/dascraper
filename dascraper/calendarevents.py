@@ -68,8 +68,9 @@ def main():
 
     today = datetime.date.today()
     try:
+        next_month_query = {"year": today.year, "month": today.month + 1}
         events_next_month = parse(requests.get(
-            MONTH_SCRIPT, year=today.year, month=today.month + 1).text)
+            MONTH_SCRIPT, next_month_query).text)
     except requests.exceptions.RequestException:
         logging.exception("Something went wrong with the request! Exiting...")
         sys.exit(1)
