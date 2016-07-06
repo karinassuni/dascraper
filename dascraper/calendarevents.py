@@ -1,10 +1,10 @@
+import datetime
 import logging
+import json
 import requests
 from bs4 import BeautifulSoup
-import datetime
 from .clean import iso_time
 from collections import namedtuple
-import json
 
 BASE_URL = "https://www.deanza.edu/eventscalendar/"
 

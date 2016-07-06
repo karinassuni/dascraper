@@ -1,9 +1,9 @@
-import os
-import logging
-import docx
 import datetime
-from .clean import iso_time
+import docx
+import logging
 import json
+import os
+from .clean import iso_time
 
 WORD_DOC = docx.Document(os.path.relpath("res/ClubMeetingsSpring2016.docx"))
 
