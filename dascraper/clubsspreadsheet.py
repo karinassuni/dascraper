@@ -65,8 +65,7 @@ def extract_days(days):
 
 def extract_dates(dates):
     """
-    Given a string of dates with arbitrary separators, return an array of ISO
-    dates
+    Given a string of dates with arbitrary separators, return an array of ISO dates
     >>> extract_dates("4/8, 15, 22, 29")
         ["2016-04-08", "2016-04-15", "2016-04-22", "2016-04-29"]
     """
