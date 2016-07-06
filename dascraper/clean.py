@@ -1,19 +1,22 @@
 import re
 import datetime
 
-def clean_time(time):
+
+def ptime(time):
+    clean_time = ''
     hhmm = re.search("\d{1,2}:\d{2}", time).group(0)
     if 'a' in time.lower():
-        time = hhmm + "AM"
+        clean_time = hhmm + "AM"
     elif 'p' in time.lower():
-        time = hhmm + "PM"
+        clean_time = hhmm + "PM"
 
-    return time
+    return clean_time
+
 
 def iso_time(time):
     return (
         datetime.datetime
-        .strptime(clean_time(time), "%I:%M%p")
+        .strptime(ptime(time), "%I:%M%p")
         .time()
         .isoformat()
     )

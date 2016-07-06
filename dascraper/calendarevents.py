@@ -1,21 +1,23 @@
 import datetime
-import logging
 import json
+import logging
 import requests
 from bs4 import BeautifulSoup
-from collections import namedtuple
 from dascraper.clean import iso_time
+
 
 BASE_URL = "https://www.deanza.edu/eventscalendar/"
 
-def parse_calendar(html):
-    calendar_soup = BeautifulSoup(html, "lxml")
-    calendar = calendar_soup.find("table", class_="main")
+
+def parse(html):
+    soup = BeautifulSoup(html, "lxml")
+    calendar = soup.find("table", class_="main")
     START_ROW = 1
     events = []
 
     for tr in calendar.find_all("tr")[START_ROW:]:
         for td in tr.find_all("td"):
+            # Get links to events' pages, where you will parse event data
             for a in td.find_all("a"):
                 # "class" is a special multi-valued attribute, so it's contained in a list
                 if a["class"][0] == "entry":
@@ -24,16 +26,17 @@ def parse_calendar(html):
 
     return events
 
+
 def parse_event(html):
-    event_soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(html, "lxml")
     DESIRED_ROWS = ["description", "date", "time", "location", "sponsor"]
 
     event = {
-        "name": event_soup.find(id="cal_div_obj").h2.get_text().strip(),
+        "name": soup.find(id="cal_div_obj").h2.get_text().strip(),
         "source": "DA Calendar"
     }
 
-    for tr in event_soup.find("table").find_all("tr"):
+    for tr in soup.find("table").find_all("tr"):
         raw_field_name = tr.contents[0].get_text()
         field_name = ''.join(c for c in raw_field_name.lower() if c.isalpha())
         if field_name in DESIRED_ROWS:
@@ -53,29 +56,29 @@ def parse_event(html):
 
     return event
 
-def extract_calendar_events(url, *data):
-    logging.debug("Requesting {}...".format(url))
-    if data:
-        r = requests.get(url, data)
-    else:
-        r = requests.get(url)
-    logging.debug("Downloaded {}".format(url))
-
-    return parse_calendar(r.text)
 
 def main():
     MONTH_SCRIPT = BASE_URL + "month.php"
 
-    this_month_events = extract_calendar_events(MONTH_SCRIPT)
+    try:
+        events_this_month = parse(requests.get(MONTH_SCRIPT).text)
+    except requests.exceptions.RequestException:
+        logging.exception("Something went wrong with the request! Exiting...")
+        sys.exit(1)
 
     today = datetime.date.today()
-    next_month_query = {"year": today.year, "month": today.month + 1}
-    next_month_events = extract_calendar_events(MONTH_SCRIPT, next_month_query)
+    try:
+        events_next_month = parse(requests.get(
+            MONTH_SCRIPT, year=today.year, month=today.month + 1).text)
+    except requests.exceptions.RequestException:
+        logging.exception("Something went wrong with the request! Exiting...")
+        sys.exit(1)
 
     with open("calendarevents.json", 'w') as outfile:
-        json.dump(this_month_events + next_month_events, outfile)
+        json.dump(events_this_month + events_next_month, outfile)
 
     logging.debug("Parsing complete! Saved to calendarevents.json")
+
 
 if __name__ == "__main__":
     main()
