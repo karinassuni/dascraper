@@ -47,6 +47,13 @@ def parse():
 
 
 def extract_days(days):
+    """
+    Given a string of days with arbitrary separators, return an array of ISO-
+    friendly day strings
+    >>> extract_days("Thursdays / Fridays")
+        ["Thu", "Fri"]
+    """
+
     # Keep spaces, for splitting the string
     clean_days = ''.join(c for c in days if c.isalpha() or c.isspace()).split()
 
@@ -57,29 +64,30 @@ def extract_days(days):
 
 
 def extract_dates(dates):
-    """ input:
-        4/8, 15, 22, 29, 5/6, 13, 20, 27, 6/3, 10, 17
-        output:
-        2016-04-08, 2016-04-15, 2016-04-22, 2016-04-29, ...
+    """
+    Given a string of dates with arbitrary separators, return an array of ISO
+    dates
+    >>> extract_dates("4/8, 15, 22, 29")
+        ["2016-04-08", "2016-04-15", "2016-04-22", "2016-04-29"]
     """
 
-    WORD_DOC_YEAR = WORD_DOC.tables[0].cell(0, 3).text.split()[0]
+    WORD_DOC_YEAR = int(WORD_DOC.tables[0].cell(0, 3).text.split()[0])
 
     # Remove all whitespace from dates string
     clean_dates = ''.join(dates.split()).split(',')
 
-    month = ''
+    month = 0
 
     # Since we're modifying the array while looping, we need the index
     for i, date in enumerate(clean_dates):
         date_has_month = bool('/' in date)
         if date_has_month:
-            month = date[:date.index('/')]
+            month = int(date[:date.index('/')])
             # Strip the date's month, for uniformity outside the if block
             date = date[date.index('/') + 1:]
         try:
             clean_dates[i] = datetime.date(
-                int(WORD_DOC_YEAR), int(month), int(date)).isoformat()
+                WORD_DOC_YEAR, month, int(date)).isoformat()
         except ValueError:
             logging.exception("Invalid date in spreadsheet")
             continue
