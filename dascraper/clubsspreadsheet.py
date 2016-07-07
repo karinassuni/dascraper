@@ -23,7 +23,8 @@ def parse():
     for table in WORD_DOC.tables:
         for row in table.rows[FIRST_ROW:]:
             row_cells = row.cells
-            club_is_active = bool(row_cells[(RAW_FIELDS.index("dates"))].text.strip() != '')
+            club_is_active = bool(row_cells[(RAW_FIELDS.index("dates"))]
+                                  .text.strip() != '')
             if club_is_active:
                 club = clean({
                     RAW_FIELDS[i]: cell.text
@@ -68,7 +69,12 @@ def extract_days(days):
     """
 
     # Leave only letters and spaces, so that split() works consistently
-    clean_days = ''.join(c for c in days if c.isalpha() or c.isspace()).split()
+    clean_days = ''.join(
+        c
+        for c in days
+        if c.isalpha()
+        or c.isspace()
+    ).split()
 
     for i, day in enumerate(clean_days):
         clean_days[i] = day[0:3].capitalize()
@@ -78,11 +84,13 @@ def extract_days(days):
 
 def extract_dates(dates):
     """
-    Given a string of dates with arbitrary separators, return an array of ISO dates
+    Given a string of dates with arbitrary separators, return an array of ISO
+    dates
     >>> extract_dates("4/8, 15, 22, 29")
         ["2016-04-08", "2016-04-15", "2016-04-22", "2016-04-29"]
     """
 
+    # Cell text example: "2016 SPRING CLUB MEETING SCHEDULE"
     WORD_DOC_YEAR = int(WORD_DOC.tables[0].cell(0, 3).text.split()[0])
 
     # Remove all whitespace from dates string, leaving only commas for splitting

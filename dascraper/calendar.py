@@ -15,13 +15,13 @@ def parse(html):
     START_ROW = 1
     events = []
 
-    for tr in calendar.find_all("tr")[START_ROW:]:
-        for td in tr.find_all("td"):
+    for week in calendar.find_all("tr")[START_ROW:]:
+        for day in week.find_all("td"):
             # Get links to events' pages, where you will parse event data
-            for a in td.find_all("a"):
+            for link in day.find_all("a"):
                 # "class" is a special multi-valued attribute, so it's contained in a list
-                if a["class"][0] == "entry":
-                    r = requests.get(BASE_URL + a["href"])
+                if link["class"][0] == "entry":
+                    r = requests.get(BASE_URL + link["href"])
                     events.append(calendarevents.parse(r.text))
 
     return events

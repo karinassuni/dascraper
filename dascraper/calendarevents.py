@@ -12,11 +12,11 @@ def parse(html):
         "source": "DA Calendar"
     }
 
-    for tr in soup.find("table").find_all("tr"):
-        raw_row_name = tr.contents[0].get_text()
+    for row in soup.find("table").find_all("tr"):
+        raw_row_name = row.contents[0].get_text()
         row_name = ''.join(c for c in raw_row_name.lower() if c.isalpha())
         if row_name in EVENT_FIELDS:
-            value = tr.contents[1].get_text().strip()
+            value = row.contents[1].get_text().strip()
             event[row_name] = value
 
     return clean(event)
