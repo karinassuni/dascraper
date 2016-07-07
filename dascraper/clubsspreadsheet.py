@@ -110,7 +110,7 @@ def extract_dates(dates):
 def main():
     with open("clubs.json", 'w') as o:
         json.dump(parse(), o, sort_keys=True, indent=4,
-	    separators=(',', ': '))
+            separators=(',', ': '))
 
 
 if __name__ == "__main__":
