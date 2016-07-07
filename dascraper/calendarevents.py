@@ -1,9 +1,9 @@
+import dascraper.cleantime as cleantime
 import datetime
 import json
 import logging
 import requests
 from bs4 import BeautifulSoup
-from dascraper.clean import iso_time
 
 
 BASE_URL = "https://www.deanza.edu/eventscalendar/"
@@ -29,7 +29,7 @@ def parse(html):
 
 def parse_event(html):
     soup = BeautifulSoup(html, "lxml")
-    DESIRED_ROWS = ["description", "date", "time", "location", "sponsor"]
+    EVENT_FIELDS = ("description", "date", "time", "location", "sponsor")
 
     event = {
         "name": soup.find(id="cal_div_obj").h2.get_text().strip(),
@@ -37,24 +37,30 @@ def parse_event(html):
     }
 
     for tr in soup.find("table").find_all("tr"):
-        raw_field_name = tr.contents[0].get_text()
-        field_name = ''.join(c for c in raw_field_name.lower() if c.isalpha())
-        if field_name in DESIRED_ROWS:
-            field_value = tr.contents[1].get_text().strip()
-            if field_name == "date":
-                event["date"] = (
-                    datetime.datetime
-                    .strptime(field_value, "%A, %B %d, %Y")
-                    .date()
-                    .isoformat()
-                )
-            elif field_name == "time":
-                event["start_time"] = iso_time(field_value.split('-')[0])
-                event["end_time"] = iso_time(field_value.split('-')[1])
-            else:
-                event[field_name] = field_value
+        raw_row_name = tr.contents[0].get_text()
+        row_name = ''.join(c for c in raw_row_name.lower() if c.isalpha())
+        if row_name in EVENT_FIELDS:
+            value = tr.contents[1].get_text().strip()
+            event[row_name] = value
 
-    return event
+    return clean(event)
+
+
+def clean(event):
+    clean_event = event
+    clean_event["date"] = (
+        datetime.datetime
+        .strptime(event["date"], "%A, %B %d, %Y")
+        .date()
+        .isoformat()
+    )
+    clean_event["start_time"] = cleantime.iso(event["time"].split('-')[0])
+    clean_event["end_time"] = cleantime.iso(event["time"].split('-')[1])
+
+    # start_time and end_time found; raw "time" no longer needed
+    clean_event.pop("time", None)
+
+    return clean_event
 
 
 def main():
@@ -76,7 +82,7 @@ def main():
         sys.exit(1)
 
     with open("calendarevents.json", 'w') as outfile:
-        json.dump(events_this_month + events_next_month, outfile)
+        json.dump(events_this_month + events_next_month, outfile, sort_keys=True)
 
     logging.debug("Parsing complete! Saved to calendarevents.json")
 

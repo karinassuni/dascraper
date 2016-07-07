@@ -1,49 +1,62 @@
+import dascraper.cleantime as cleantime
 import datetime
 import docx
 import json
 import logging
 import os
-from dascraper.clean import iso_time
 
 
 # Path arguments in os.path are relative to the present working directory
 # (the directory from where the module is called), so use the unchanging
 # absolute path to the directory containing this file via `__file__`
-WORD_DOC = docx.Document(os.path.join(os.path.dirname(
-    __file__), os.path.relpath("res/ClubMeetingsSpring2016.docx")))
+WORD_DOC = docx.Document(os.path.join(
+    os.path.dirname(__file__), os.path.relpath("res/ClubMeetingsSpring2016.docx")))
 
 
 def parse():
-    START_INDEX = 3
-    NAME_INDEX, DAYS_INDEX, DATES_INDEX, TIME_INDEX, LOCATION_INDEX = range(1, 6)
+    RAW_FIELDS = ('', "name", "days", "dates", "time", "location", '')
+    FIRST_ROW = 3
     clubs = []
 
     logging.debug("Parsing the club spreadsheet...")
 
     for table in WORD_DOC.tables:
-        for row in table.rows[START_INDEX:]:
+        for row in table.rows[FIRST_ROW:]:
             row_cells = row.cells
-            club_is_active = bool(row_cells[DATES_INDEX].text.strip())
+            club_is_active = bool(row_cells[(RAW_FIELDS.index("dates"))].text.strip() != '')
             if club_is_active:
-                club = {
-                    "name": row_cells[NAME_INDEX].text.strip(),
-                    "days": extract_days(
-                        row_cells[DAYS_INDEX].text),
-                    "dates": extract_dates(
-                        row_cells[DATES_INDEX].text),
-                    "start_time": iso_time(
-                        row_cells[TIME_INDEX].text.split(" - ")[0]),
-                    "location": row_cells[LOCATION_INDEX].text.strip()
-                }
-                try:
-                    club["end_time"] = iso_time(
-                        row_cells[TIME_INDEX].text.split(" - ")[1])
-                except IndexError:
-                    club["end_time"] = ''
+                club = clean({
+                    RAW_FIELDS[i]: cell.text
+                    for i, cell in enumerate(row_cells)
+                })
                 clubs.append(club)
 
     logging.debug("Finished parsing the club spreadsheet")
+
     return clubs
+
+
+def clean(club):
+    clean_club = club
+    clean_club["name"] = club["name"].strip()
+    clean_club["days"] = extract_days(club["days"])
+    clean_club["dates"] = extract_dates(club["dates"])
+    clean_club["start_time"] = cleantime.iso(club["time"].split(" - ")[0])
+
+    try:
+        clean_club["end_time"] = cleantime.iso(club["time"].split(" - ")[1])
+    except IndexError:
+        clean_club["end_time"] = ''
+
+    clean_club["location"] = club["location"].strip()
+
+    # start_time and end_time found; raw "time" no longer needed
+    clean_club.pop("time", None)
+
+    # Remove '' key generated from the blank raw fields
+    clean_club.pop('', None)
+
+    return clean_club
 
 
 def extract_days(days):
@@ -54,7 +67,7 @@ def extract_days(days):
         ["Thu", "Fri"]
     """
 
-    # Keep spaces, for splitting the string
+    # Leave only letters and spaces, so that split() works consistently
     clean_days = ''.join(c for c in days if c.isalpha() or c.isspace()).split()
 
     for i, day in enumerate(clean_days):
@@ -72,7 +85,7 @@ def extract_dates(dates):
 
     WORD_DOC_YEAR = int(WORD_DOC.tables[0].cell(0, 3).text.split()[0])
 
-    # Remove all whitespace from dates string
+    # Remove all whitespace from dates string, leaving only commas for splitting
     clean_dates = ''.join(dates.split()).split(',')
 
     month = 0
@@ -88,7 +101,7 @@ def extract_dates(dates):
             clean_dates[i] = datetime.date(
                 WORD_DOC_YEAR, month, int(date)).isoformat()
         except ValueError:
-            logging.exception("Invalid date in spreadsheet")
+            logging.exception("Invalid date in spreadsheet: \"{}\"".format(date))
             continue
 
     return clean_dates
@@ -96,7 +109,7 @@ def extract_dates(dates):
 
 def main():
     with open("clubs.json", 'w') as o:
-        json.dump(parse(), o)
+        json.dump(parse(), o, sort_keys=True)
 
 
 if __name__ == "__main__":
