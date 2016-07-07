@@ -81,8 +81,9 @@ def main():
         logging.exception("Something went wrong with the request! Exiting...")
         sys.exit(1)
 
-    with open("calendarevents.json", 'w') as outfile:
-        json.dump(events_this_month + events_next_month, outfile, sort_keys=True)
+    with open("calendarevents.json", 'w') as o:
+        json.dump(events_this_month + events_next_month, o,
+	    sort_keys=True, indent=4, separators=(',', ': '))
 
     logging.debug("Parsing complete! Saved to calendarevents.json")
 
