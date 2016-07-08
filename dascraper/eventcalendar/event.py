@@ -10,10 +10,10 @@ def parse(html):
     soup = BeautifulSoup(html, "lxml")
     EVENT_FIELDS = ("description", "date", "time", "location", "sponsor")
 
-    event = {
-        "name": soup.find(id="cal_div_obj").h2.get_text().strip(),
-        "source": "DA Calendar"
-    }
+    event = {}
+    event["name"] = soup.find(id="cal_div_obj").h2.get_text().strip()
+    event["source"] = "DA Calendar"
+
     logging.debug(event["name"])
 
     for row in soup.find("table").find_all("tr"):
