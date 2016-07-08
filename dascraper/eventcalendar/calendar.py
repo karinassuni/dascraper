@@ -27,7 +27,19 @@ def crawl(html, link_handler):
     logging.info("Finished crawling the {} calendar".format(month))
 
 
+def request_html(func):
+    def decorator(*args):
+        try:
+            r = requests.get(*args)
+        except requests.exceptions.RequestException:
+            logging.exception("Something went wrong with the request! Exiting...")
+            sys.exit(1)
+        else:
+            return func(r.text)
+    return decorator
 
+
+@request_html
 def parse(html):
     events = []
 
@@ -44,23 +56,11 @@ def main():
     # Defaults to getting this month's calendar
     MONTH_SCRIPT = BASE_URL + "month.php"
 
-    try:
-        r = requests.get(MONTH_SCRIPT)
-    except requests.exceptions.RequestException:
-        logging.exception("Something went wrong with the request! Exiting...")
-        sys.exit(1)
-    else:
-        events_this_month = parse(r.text)
+    events_this_month = parse(MONTH_SCRIPT)
 
     today = datetime.date.today()
     next_month_query = {"year": today.year, "month": today.month + 1}
-    try:
-        r = requests.get(MONTH_SCRIPT, next_month_query)
-    except requests.exceptions.RequestException:
-        logging.exception("Something went wrong with the request! Exiting...")
-        sys.exit(1)
-    else:
-        events_next_month = parse(r.text)
+    events_next_month = parse(MONTH_SCRIPT, next_month_query)
 
     with open("calendarevents.json", 'w') as o:
         json.dump(events_this_month + events_next_month, o,
