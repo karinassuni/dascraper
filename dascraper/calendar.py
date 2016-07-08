@@ -17,7 +17,6 @@ def parse(html):
 
     for week in calendar.find_all("tr")[START_ROW:]:
         for day in week.find_all("td"):
-            # Get links to events' pages, where you will parse event data
             for link in day.find_all("a"):
                 # "class" is a special multi-valued attribute, so it's contained in a list
                 if link["class"][0] == "entry":
