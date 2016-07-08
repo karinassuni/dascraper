@@ -1,1 +1,1 @@
-# Data mining for the DA Students App
+# Data mining for the DA Students app
