@@ -1,1 +1,1 @@
-# Data mining for the DA Students app
+# Scraping data for the DA Students app
