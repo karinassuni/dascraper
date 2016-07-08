@@ -1,10 +1,10 @@
-from . import calendar
-from . import clubsspreadsheet
+import dascraper.eventcalendar.calendar as calendar
+import dascraper.clubs.spreadsheet as spreadsheet
 
 
 def main():
     calendar.main()
-    clubsspreadsheet.main()
+    spreadsheet.main()
 
 
 if __name__ == "__main__":

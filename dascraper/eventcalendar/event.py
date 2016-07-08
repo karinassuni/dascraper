@@ -1,7 +1,7 @@
 import datetime
 import logging
 from bs4 import BeautifulSoup
-from . import cleantime
+from dascraper import cleantime
 
 
 def parse(html):

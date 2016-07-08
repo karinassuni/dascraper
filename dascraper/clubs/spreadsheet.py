@@ -3,14 +3,14 @@ import docx
 import json
 import logging
 import os
-from . import cleantime
+from dascraper import cleantime
 
 
 # Path arguments in os.path are relative to the present working directory
 # (the directory from where the module is called), so use the unchanging
 # absolute path to the directory containing this file via `__file__`
 WORD_DOC = docx.Document(os.path.join(
-    os.path.dirname(__file__), os.path.relpath("res/ClubMeetingsSpring2016.docx")))
+    os.path.dirname(__file__), os.path.relpath("ClubMeetingsSpring2016.docx")))
 
 
 def parse():
