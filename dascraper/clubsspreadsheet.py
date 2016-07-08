@@ -1,9 +1,9 @@
-import dascraper.cleantime as cleantime
 import datetime
 import docx
 import json
 import logging
 import os
+from . import cleantime
 
 
 # Path arguments in os.path are relative to the present working directory
@@ -14,11 +14,11 @@ WORD_DOC = docx.Document(os.path.join(
 
 
 def parse():
+    logging.info("Parsing the club spreadsheet...")
+
     RAW_FIELDS = ('', "name", "days", "dates", "time", "location", '')
     FIRST_ROW = 3
     clubs = []
-
-    logging.debug("Parsing the club spreadsheet...")
 
     for table in WORD_DOC.tables:
         for row in table.rows[FIRST_ROW:]:
@@ -32,8 +32,7 @@ def parse():
                 })
                 clubs.append(club)
 
-    logging.debug("Finished parsing the club spreadsheet")
-
+    logging.info("Finished parsing the club spreadsheet")
     return clubs
 
 
@@ -117,8 +116,7 @@ def extract_dates(dates):
 
 def main():
     with open("clubs.json", 'w') as o:
-        json.dump(parse(), o, sort_keys=True, indent=4,
-            separators=(',', ': '))
+        json.dump(parse(), o, sort_keys=True, indent=4, separators=(',', ': '))
 
 
 if __name__ == "__main__":

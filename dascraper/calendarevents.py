@@ -1,9 +1,12 @@
-import dascraper.cleantime as cleantime
 import datetime
+import logging
 from bs4 import BeautifulSoup
+from . import cleantime
 
 
 def parse(html):
+    logging.info("Parsing calendar event:")
+
     soup = BeautifulSoup(html, "lxml")
     EVENT_FIELDS = ("description", "date", "time", "location", "sponsor")
 
@@ -11,6 +14,7 @@ def parse(html):
         "name": soup.find(id="cal_div_obj").h2.get_text().strip(),
         "source": "DA Calendar"
     }
+    logging.debug(event["name"])
 
     for row in soup.find("table").find_all("tr"):
         raw_row_name = row.contents[0].get_text()
@@ -19,6 +23,7 @@ def parse(html):
             value = row.contents[1].get_text().strip()
             event[row_name] = value
 
+    logging.info("Finished parsing {}".format(event["name"]))
     return clean(event)
 
 
