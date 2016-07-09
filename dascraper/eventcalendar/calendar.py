@@ -27,7 +27,7 @@ def crawl(html, link_handler):
     logging.info("Finished crawling the {} calendar".format(month))
 
 
-def request_html(func):
+def get_request(func):
     def decorator(*args):
         try:
             r = requests.get(*args)
@@ -39,7 +39,7 @@ def request_html(func):
     return decorator
 
 
-@request_html
+@get_request
 def parse(html):
     events = []
 
@@ -54,13 +54,13 @@ def parse(html):
 
 def main():
     # Defaults to getting this month's calendar
-    MONTH_SCRIPT = BASE_URL + "month.php"
+    MONTH_PAGE = BASE_URL + "month.php"
 
-    events_this_month = parse(MONTH_SCRIPT)
+    events_this_month = parse(MONTH_PAGE)
 
     today = datetime.date.today()
     next_month_query = {"year": today.year, "month": today.month + 1}
-    events_next_month = parse(MONTH_SCRIPT, next_month_query)
+    events_next_month = parse(MONTH_PAGE, next_month_query)
 
     with open("calendarevents.json", 'w') as o:
         json.dump(events_this_month + events_next_month, o,
