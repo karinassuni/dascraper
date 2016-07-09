@@ -28,17 +28,16 @@ def parse(html):
 
 
 def clean(event):
-    clean_event = event
-    clean_event["date"] = (
+    event["date"] = (
         datetime.datetime
         .strptime(event["date"], "%A, %B %d, %Y")
         .date()
         .isoformat()
     )
-    clean_event["start_time"] = cleantime.iso(event["time"].split('-')[0])
-    clean_event["end_time"] = cleantime.iso(event["time"].split('-')[1])
+    event["start_time"] = cleantime.iso(event["time"].split('-')[0])
+    event["end_time"] = cleantime.iso(event["time"].split('-')[1])
 
     # start_time and end_time found; raw "time" no longer needed
-    clean_event.pop("time", None)
+    event.pop("time", None)
 
-    return clean_event
+    return event

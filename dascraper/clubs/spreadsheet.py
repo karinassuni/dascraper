@@ -37,55 +37,53 @@ def parse():
 
 
 def clean(club):
-    clean_club = club
-    clean_club["name"] = club["name"].strip()
-    clean_club["days"] = extract_days(club["days"])
-    clean_club["dates"] = extract_dates(club["dates"])
-    clean_club["start_time"] = cleantime.iso(club["time"].split(" - ")[0])
+    club["name"] = club["name"].strip()
+    club["days"] = split_days(club["days"])
+    club["dates"] = split_dates(club["dates"])
+    club["start_time"] = cleantime.iso(club["time"].split(" - ")[0])
 
     try:
-        clean_club["end_time"] = cleantime.iso(club["time"].split(" - ")[1])
+        club["end_time"] = cleantime.iso(club["time"].split(" - ")[1])
     except IndexError:
-        clean_club["end_time"] = ''
+        club["end_time"] = ''
 
-    clean_club["location"] = club["location"].strip()
+    club["location"] = club["location"].strip()
 
     # start_time and end_time found; raw "time" no longer needed
-    clean_club.pop("time", None)
+    club.pop("time", None)
 
     # Remove '' key generated from the blank raw fields
-    clean_club.pop('', None)
+    club.pop('', None)
 
-    return clean_club
+    return club
 
 
-def extract_days(days):
+def split_days(days):
     """
     Given a string of days with arbitrary separators, return an array of ISO-
     friendly day strings
-    >>> extract_days("Thursdays / Fridays")
+    >>> split_days("Thursdays / Fridays")
         ["Thu", "Fri"]
     """
 
     # Leave only letters and spaces, so that split() works consistently
-    clean_days = ''.join(
+    days = ''.join(
         c
         for c in days
         if c.isalpha()
         or c.isspace()
     ).split()
 
-    for i, day in enumerate(clean_days):
-        clean_days[i] = day[0:3].capitalize()
+    days = [day[0:3].capitalize() for day in days]
 
-    return clean_days
+    return days
 
 
-def extract_dates(dates):
+def split_dates(dates):
     """
     Given a string of dates with arbitrary separators, return an array of ISO
     dates
-    >>> extract_dates("4/8, 15, 22, 29")
+    >>> split_dates("4/8, 15, 22, 29")
         ["2016-04-08", "2016-04-15", "2016-04-22", "2016-04-29"]
     """
 
@@ -93,25 +91,27 @@ def extract_dates(dates):
     WORD_DOC_YEAR = int(WORD_DOC.tables[0].cell(0, 3).text.split()[0])
 
     # Remove all whitespace from dates string, leaving only commas for splitting
-    clean_dates = ''.join(dates.split()).split(',')
+    dates = ''.join(dates.split()).split(',')
 
     month = 0
 
-    # Since we're modifying the array while looping, we need the index
-    for i, date in enumerate(clean_dates):
+    # Since we're modifying the list in place, we need the current index
+    for i, date in enumerate(dates):
         date_has_month = bool('/' in date)
         if date_has_month:
+            # Separate the month and date into two variables
             month = int(date[:date.index('/')])
-            # Strip the date's month, for uniformity outside the if block
-            date = date[date.index('/') + 1:]
+            date = int(date[date.index('/') + 1:])
+        else:
+            date = int(date)
+
         try:
-            clean_dates[i] = datetime.date(
-                WORD_DOC_YEAR, month, int(date)).isoformat()
+            dates[i] = datetime.date(WORD_DOC_YEAR, month, date).isoformat()
         except ValueError:
             logging.exception("Invalid date in spreadsheet: \"{}\"".format(date))
             continue
 
-    return clean_dates
+    return dates
 
 
 def main():
