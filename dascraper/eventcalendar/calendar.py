@@ -10,11 +10,13 @@ BASE_URL = "https://www.deanza.edu/eventscalendar/"
 
 
 def crawl(html, link_handler):
-    logging.info("Crawling calendar...")
 
     soup = BeautifulSoup(html, "lxml")
     calendar = soup.find("table", class_="main")
     START_ROW = 1
+
+    month = soup.find("span", class_="date").text
+    logging.info("Crawling the {} calendar...".format(month))
 
     for week in calendar.find_all("tr")[START_ROW:]:
         for day in week.find_all("td"):
@@ -23,7 +25,6 @@ def crawl(html, link_handler):
                 if link["class"][0] == "entry":
                     link_handler(BASE_URL + link["href"])
 
-    month = soup.find("span", class_="date").text
     logging.info("Finished crawling the {} calendar".format(month))
 
 

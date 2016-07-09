@@ -9,14 +9,13 @@ def period(time):
         "5:30PM"
     """
 
-    clean_time = ''
     hhmm = re.search("\d{1,2}:\d{2}", time).group(0)
     if 'a' in time.lower():
-        clean_time = hhmm + "AM"
+        time = hhmm + "AM"
     elif 'p' in time.lower():
-        clean_time = hhmm + "PM"
+        time = hhmm + "PM"
 
-    return clean_time
+    return time
 
 
 def iso(time):

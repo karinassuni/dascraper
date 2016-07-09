@@ -74,9 +74,7 @@ def split_days(days):
         or c.isspace()
     ).split()
 
-    days = [day[0:3].capitalize() for day in days]
-
-    return days
+    return [day[0:3].capitalize() for day in days]
 
 
 def split_dates(dates):
