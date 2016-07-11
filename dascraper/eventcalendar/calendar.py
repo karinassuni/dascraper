@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import os
 import requests
 from bs4 import BeautifulSoup
 from . import event
@@ -16,7 +17,7 @@ def crawl(html, link_handler):
     START_ROW = 1
 
     month = soup.find("span", class_="date").text
-    logging.info("Crawling the {} calendar...".format(month))
+    logging.info("***** Crawling the {} calendar... *****".format(month))
 
     for week in calendar.find_all("tr")[START_ROW:]:
         for day in week.find_all("td"):
@@ -63,11 +64,18 @@ def main():
     next_month_query = {"year": today.year, "month": today.month + 1}
     events_next_month = parse(MONTH_PAGE, next_month_query)
 
-    with open("calendarevents.json", 'w') as o:
-        json.dump(events_this_month + events_next_month, o,
-            sort_keys=True, indent=4, separators=(',', ': '))
+    try:
+        with open(os.path.join(
+            os.environ.get("OPENSHIFT_DATA_DIR"), "json/", "calendarevents.json"), 'w') as o:
+                json.dump(events_this_month + events_next_month, o,
+                    sort_keys=True, indent=4, separators=(',', ': '))
 
-    logging.info("Parsing complete! Saved to calendarevents.json")
+    except KeyError:
+        logging.error("SOMETHING IS WRONG WITH $OPENSHIFT_DATA_DIR, could not "
+                      "save calendarevents.json!")
+
+    else:
+        logging.info("Parsing complete! Saved to calendarevents.json")
 
 
 if __name__ == "__main__":

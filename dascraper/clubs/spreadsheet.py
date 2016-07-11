@@ -14,7 +14,7 @@ WORD_DOC = docx.Document(os.path.join(
 
 
 def parse():
-    logging.info("Parsing the club spreadsheet...")
+    logging.info("***** Parsing the club spreadsheet... *****")
 
     RAW_FIELDS = ('', "name", "days", "dates", "time", "location", '')
     FIRST_ROW = 3
@@ -113,8 +113,19 @@ def split_dates(dates):
 
 
 def main():
-    with open("clubs.json", 'w') as o:
-        json.dump(parse(), o, sort_keys=True, indent=4, separators=(',', ': '))
+
+    try:
+        with open(os.path.join(
+            os.environ.get("OPENSHIFT_DATA_DIR"), "json/", "clubs.json"), 'w') as o:
+                json.dump(parse(), o, sort_keys=True, indent=4,
+                          separators=(',', ': '))
+
+    except KeyError:
+        logging.error("SOMETHING IS WRONG WITH $OPENSHIFT_DATA_DIR, could not "
+                      "save clubs.json!")
+
+    else:
+        logging.info("Parsing complete! Saved to clubs.json")
 
 
 if __name__ == "__main__":
