@@ -4,7 +4,7 @@ import logging
 import os
 import requests
 from bs4 import BeautifulSoup
-from . import event
+from dascraper.eventscalendar import event
 
 
 BASE_URL = "https://www.deanza.edu/eventscalendar/"
