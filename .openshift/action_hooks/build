@@ -1,0 +1,1 @@
+ln -sf $OPENSHIFT_DATA_DIR/json $OPENSHIFT_REPO_DIR/wsgi/static/json
