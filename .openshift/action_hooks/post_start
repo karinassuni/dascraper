@@ -17,8 +17,22 @@ nohup $OPENSHIFT_DATA_DIR/sbin/nginx > $OPENSHIFT_PYTHON_LOG_DIR/server.log 2>&1
 # builtin serves static files in the `wsgi` directory of the app repo; serve!
 ln -sf $OPENSHIFT_DATA_DIR/json $OPENSHIFT_REPO_DIR/wsgi/static/json
 
-# If a new spreadsheet.docx is pushed, re-run spreadsheet.py
-cd $OPENSHIFT_REPO_DIR
-if git show HEAD --name-only | grep -q 'dascraper/clubs/spreadsheet.docx'; then
+### If a new spreadsheet.docx is pushed, re-run spreadsheet.py ##
+
+generate_clubs ()
+{
+    cd $OPENSHIFT_REPO_DIR
     python -m dascraper.clubs.spreadsheet
+    mv clubs.json $OPENSHIFT_DATA_DIR/json
+}
+
+# Save a checksum if one does not already exist
+if [[ ! -f $OPENSHIFT_DATA_DIR/clubs.json.cksum ]]; then
+    cksum $OPENSHIFT_REPO_DIR/dascraper/clubs/spreadsheet.py > $OPENSHIFT_DATA_DIR/spreadsheet.py.cksum
+else
+    # A checksum already exists, so check it against the checksum of a new clubs.json
+    if [[ $(cat $OPENSHIFT_DATA_DIR/spreadsheet.py.cksum) != \
+        $(cksum $OPENSHIFT_REPO_DIR/dascraper/clubs/spreadsheet.py) ]]; then
+        generate_clubs
+    fi
 fi
