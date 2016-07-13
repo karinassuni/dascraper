@@ -1,10 +1,18 @@
 #!/bin/bash
+
 # The logic to start up your application should be put in this
-# script. The application will work only if it binds to
-# $OPENSHIFT_INTERNAL_IP:8080
-# nohup $OPENSHIFT_REPO_DIR/diy/testrubyserver.rb $OPENSHIFT_INTERNAL_IP $OPENSHIFT_REPO_DIR/diy > $OPENSHIFT_DIY_LOG_DIR/server.log 2>&1 &
-# replace the $OPENSHIFT_INTERNAL_IP and $OPENSHIFT_INTERNAL_PORT before starting up the server
+# script.
+
+# nginx will work only if it binds to $OPENSHIFT_INTERNAL_IP:8080
+# Replace the $OPENSHIFT_INTERNAL_IP and $OPENSHIFT_INTERNAL_PORT before starting up the server
 sed -e "s|\$OPENSHIFT_IP:\$OPENSHIFT_PORT|$OPENSHIFT_PYTHON_IP:$OPENSHIFT_PYTHON_PORT|" \
 -e "s|\$OPENSHIFT_DATA|$OPENSHIFT_DATA_DIR|" \
 $OPENSHIFT_DATA_DIR/conf/nginx.conf.template > $OPENSHIFT_DATA_DIR/conf/nginx.conf
+
+# Start nginx, and make it immune to SIGHUP (Hang UP signals) from any shells
+# after they exit
 nohup $OPENSHIFT_DATA_DIR/sbin/nginx > $OPENSHIFT_PYTHON_LOG_DIR/server.log 2>&1 &
+
+# Python scrapers save the JSONs in persistent storage, but Openshift's Apache
+# builtin serves static files in the `wsgi` directory of the app repo; serve!
+ln -sf $OPENSHIFT_DATA_DIR/json $OPENSHIFT_REPO_DIR/wsgi/static/json
