@@ -1,10 +1,10 @@
 <FilesMatch ".+\.json$">
-    # CacheQuickHandler off
-    # CacheEnable disk
-    # CacheHeader on
+    CacheQuickHandler off
+    CacheEnable disk
+    CacheHeader on
 
-    # Header merge Cache-Control public
-    # FileETag All
+    Header merge Cache-Control public
+    FileETag All
 </FilesMatch>
 
 # <Files "clubs.json">
