@@ -2,8 +2,8 @@ import datetime
 import json
 import logging
 import requests
-from bs4 import BeautifulSoup
 from dascraper.eventcalendar import event
+from lxml import etree
 
 
 BASE_URL = "https://www.deanza.edu/eventscalendar/"
@@ -11,21 +11,22 @@ BASE_URL = "https://www.deanza.edu/eventscalendar/"
 
 def crawl(html, link_handler):
 
-    soup = BeautifulSoup(html, "lxml")
-    calendar = soup.find("table", class_="main")
-    START_ROW = 1
+    root = etree.HTML(html)
 
-    month = soup.find("span", class_="date").text
+    month = crawl.find_month(root)[0]
     logging.info("Crawling the {} calendar...".format(month))
 
-    for week in calendar.find_all("tr")[START_ROW:]:
-        for day in week.find_all("td"):
-            for link in day.find_all("a"):
-                # "class" is a special multi-valued attribute, so it's contained in a list
-                if link["class"][0] == "entry":
-                    link_handler(BASE_URL + link["href"])
+    for e in crawl.find_event_path_components(root):
+        link_handler(BASE_URL + e)
 
     logging.info("Finished crawling the {} calendar".format(month))
+
+crawl.find_event_path_components = etree.XPath(
+    '//a[@class="entry"]/attribute::href'
+)
+crawl.find_month = etree.XPath(
+    '//span[@class="date"]/text()'
+)
 
 
 def get_request(func):
@@ -36,7 +37,7 @@ def get_request(func):
             logging.exception("Something went wrong with the request! Exiting...")
             sys.exit(1)
         else:
-            return func(r.text)
+            return func(r.content)
     return decorator
 
 
@@ -46,7 +47,7 @@ def parse(html):
 
     def event_url_handler(url):
         r = requests.get(url)
-        events.append(event.parse(r.text))
+        events.append(event.parse(r.content))
 
     crawl(html, event_url_handler)
 
@@ -72,3 +73,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
