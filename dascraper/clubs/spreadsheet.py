@@ -3,7 +3,7 @@ import docx
 import json
 import logging
 import os
-from dascraper import cleantime
+from dascraper.utility import cleantime
 
 
 # Path arguments in os.path are relative to the present working directory

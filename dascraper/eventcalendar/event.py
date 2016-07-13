@@ -1,6 +1,6 @@
 import datetime
 import logging
-from dascraper import cleantime
+from dascraper.utility import cleantime
 from lxml import etree
 
 
