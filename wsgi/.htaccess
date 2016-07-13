@@ -7,7 +7,8 @@
     FileETag All
 </FilesMatch>
 
-<Files "clubs.json">
+<FilesMatch "clubs.json">
+    Header set X-test "hoooop"
     # ExpiresActive on
     # ExpiresDefault "modified plus 2 months"
-</Files "clubs.json">
+</FilesMatch "clubs.json">
