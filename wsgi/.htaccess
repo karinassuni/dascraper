@@ -1,7 +1,7 @@
 <FilesMatch ".+\.json$">
-    # CacheQuickHandler off
-    # CacheEnable disk
-    # CacheHeader on
+    CacheQuickHandler off
+    CacheEnable disk
+    CacheHeader on
 
     Header merge Cache-Control public
     FileETag All
@@ -9,5 +9,5 @@
 
 <FilesMatch "clubs\.json$">
     ExpiresActive on
-    ExpiresDefault "modified plus 2 months"
+    ExpiresDefault "modified plus 1 months"
 </FilesMatch>
