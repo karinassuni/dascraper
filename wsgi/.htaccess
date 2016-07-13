@@ -7,7 +7,7 @@
     # FileETag All
 # </FilesMatch>
 
-<Files "clubs.json">
+# <Files "clubs.json">
     # ExpiresActive on
     # ExpiresDefault "modified plus 2 months"
-</Files "clubs.json">
+# </Files "clubs.json">
