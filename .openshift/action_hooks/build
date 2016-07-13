@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# If a new spreadsheet.docx is pushed, re-run spreadsheet.py
+cd $OPENSHIFT_REPO_DIR
+if git show HEAD --name-only | grep -q 'dascraper/clubs/spreadsheet.docx'; then
+    python -m dascraper.clubs.spreadsheet
+fi

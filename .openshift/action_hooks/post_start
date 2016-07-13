@@ -16,9 +16,3 @@ nohup $OPENSHIFT_DATA_DIR/sbin/nginx > $OPENSHIFT_PYTHON_LOG_DIR/server.log 2>&1
 # Python scrapers save the JSONs in persistent storage, but Openshift's Apache
 # builtin serves static files in the `wsgi` directory of the app repo; serve!
 ln -sf $OPENSHIFT_DATA_DIR/json $OPENSHIFT_REPO_DIR/wsgi/static/json
-
-# If a new spreadsheet.docx is pushed, re-run spreadsheet.py
-cd $OPENSHIFT_REPO_DIR
-if git show HEAD --name-only | grep -q 'dascraper/clubs/spreadsheet.docx'; then
-    python -m dascraper.clubs.spreadsheet
-fi
