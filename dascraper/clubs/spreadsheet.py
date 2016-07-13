@@ -10,7 +10,7 @@ from dascraper import cleantime
 # (the directory from where the module is called), so use the unchanging
 # absolute path to the directory containing this file via `__file__`
 WORD_DOC = docx.Document(os.path.join(
-    os.path.dirname(__file__), os.path.relpath("ClubMeetingsSpring2016.docx")))
+    os.path.dirname(__file__), os.path.relpath("spreadsheet.docx")))
 
 
 def parse():
