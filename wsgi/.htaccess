@@ -1,11 +1,11 @@
-<FilesMatch ".+\.json$">
+# <FilesMatch ".+\.json$">
     # CacheQuickHandler off
     # CacheEnable disk
     # CacheHeader on
 
     # Header merge Cache-Control public
     # FileETag All
-</FilesMatch>
+# </FilesMatch>
 
 <Files "clubs.json">
     # ExpiresActive on
