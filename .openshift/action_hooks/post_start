@@ -21,3 +21,4 @@ ln -sf $OPENSHIFT_DATA_DIR/json $OPENSHIFT_REPO_DIR/wsgi/static/json
 cd $OPENSHIFT_REPO_DIR
 if git show HEAD --name-only | grep -q 'dascraper/clubs/spreadsheet.docx'; then
     python -m dascraper.clubs.spreadsheet
+fi
