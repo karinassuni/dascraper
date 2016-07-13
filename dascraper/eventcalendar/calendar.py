@@ -21,6 +21,7 @@ def crawl(html, link_handler):
 
     logging.info("Finished crawling the {} calendar".format(month))
 
+
 crawl.find_event_path_components = etree.XPath(
     '//a[@class="entry"]/attribute::href'
 )

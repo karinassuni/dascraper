@@ -17,9 +17,9 @@ def parse(html):
     for f in EVENT_FIELDS:
         event[f] = root.xpath(
             '//td[contains(., "{}")]/following-sibling::*/text()'
-                # The raw fields in HTML are capitalized
-                .format(f.capitalize())
-        )[0].strip()
+            # The raw fields in HTML are capitalized
+            .format(f.capitalize())
+        )[0]
 
     logging.debug("Finished parsing calendar event: {}".format(event["name"]))
     return clean(event)
@@ -30,14 +30,25 @@ parse.find_name = etree.XPath(
 
 
 def clean(event):
+
+    for field, value in event.items():
+        event[field] = value.strip()
+
     event["date"] = (
         datetime.datetime
         .strptime(event["date"], "%A, %B %d, %Y")
         .date()
         .isoformat()
     )
-    event["start_time"] = cleantime.iso(event["time"].split('-')[0])
-    event["end_time"] = cleantime.iso(event["time"].split('-')[1])
+
+    event["start_time"] = cleantime.iso(
+        event["time"]
+        .split('-')[0]
+    )
+    event["end_time"] = cleantime.iso(
+        event["time"]
+        .split('-')[1]
+    )
 
     # start_time and end_time found; raw "time" no longer needed
     event.pop("time", None)

@@ -5,7 +5,7 @@ import datetime
 def period(time):
     """
     Returns time with an ISO-compatible period
-    >>> period("5:30 pom")
+    >>> period("5:30 pom ")
         "5:30PM"
     """
 
@@ -21,7 +21,7 @@ def period(time):
 def iso(time):
     """
     Returns time in ISO format
-    >>> iso("5:30 pom")
+    >>> iso("5:30 pom ")
         "17:30:00"
     """
     return (

@@ -23,8 +23,10 @@ def parse():
     for table in WORD_DOC.tables:
         for row in table.rows[FIRST_ROW:]:
             row_cells = row.cells
-            club_is_active = bool(row_cells[(RAW_FIELDS.index("dates"))]
-                                  .text.strip() != '')
+            club_is_active = bool(
+                row_cells[(RAW_FIELDS.index("dates"))]
+                .text.strip() != ''
+            )
             if club_is_active:
                 club = clean({
                     RAW_FIELDS[i]: cell.text
@@ -37,17 +39,26 @@ def parse():
 
 
 def clean(club):
-    club["name"] = club["name"].strip()
+
+    for field, value in club.items():
+        club[field] = value.strip()
+
     club["days"] = split_days(club["days"])
     club["dates"] = split_dates(club["dates"])
-    club["start_time"] = cleantime.iso(club["time"].split(" - ")[0])
 
+    club["start_time"] = cleantime.iso(
+        club["time"]
+        .split("-")[0]
+    )
+
+    # Not all clubs have end times
     try:
-        club["end_time"] = cleantime.iso(club["time"].split(" - ")[1])
+        club["end_time"] = cleantime.iso(
+            club["time"]
+            .split("-")[1]
+        )
     except IndexError:
         club["end_time"] = ''
-
-    club["location"] = club["location"].strip()
 
     # start_time and end_time found; raw "time" no longer needed
     club.pop("time", None)
