@@ -1,1 +1,13 @@
-AAAAAH
+<FilesMatch ".+\.json$">
+    CacheQuickHandler off
+    CacheEnable disk
+    CacheHeader on
+
+    Header merge Cache-Control public
+    FileETag All
+</FilesMatch>
+
+<Files "clubs.json">
+    ExpiresActive on
+    ExpiresDefault "modified plus 2 months"
+</Files "clubs.json">
