@@ -1,6 +1,6 @@
 <FilesMatch ".+\.json$">
     # CacheQuickHandler off
-    CacheEnable disk
+    # CacheEnable disk
     # CacheHeader on
 
     Header merge Cache-Control public
