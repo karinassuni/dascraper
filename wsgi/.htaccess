@@ -1,14 +1,14 @@
-<FilesMatch ".+\.json$">
-    # CacheQuickHandler off
-    # CacheEnable disk
-    # CacheHeader on
+# <FilesMatch ".+\.json$">
+#     # CacheQuickHandler off
+#     # CacheEnable disk
+#     # CacheHeader on
 
-    Header merge Cache-Control public
-    FileETag All
-</FilesMatch>
+#     Header merge Cache-Control public
+#     FileETag All
+# </FilesMatch>
 
-# <FilesMatch "clubs\.json$">
+<FilesMatch "clubs\.json$">
     # Header set X-test "hoooop"
     # ExpiresActive on
     # ExpiresDefault "modified plus 2 months"
-# </FilesMatch "clubs\.json$">
+</FilesMatch "clubs\.json$">
