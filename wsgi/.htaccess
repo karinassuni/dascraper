@@ -1,5 +1,5 @@
 <FilesMatch ".+\.json$">
-    CacheQuickHandler off
+    # CacheQuickHandler off
     CacheEnable disk
     CacheHeader on
 
