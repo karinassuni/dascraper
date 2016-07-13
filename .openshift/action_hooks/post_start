@@ -28,11 +28,11 @@ generate_clubs ()
 
 # Save a checksum if one does not already exist
 if [[ ! -f $OPENSHIFT_DATA_DIR/clubs.json.cksum ]]; then
-    cksum $OPENSHIFT_REPO_DIR/dascraper/clubs/spreadsheet.py > $OPENSHIFT_DATA_DIR/spreadsheet.py.cksum
+    cksum $OPENSHIFT_REPO_DIR/dascraper/clubs/spreadsheet.docx > $OPENSHIFT_DATA_DIR/spreadsheet.docx.cksum
 else
     # A checksum already exists, so check it against the checksum of a new clubs.json
-    if [[ $(cat $OPENSHIFT_DATA_DIR/spreadsheet.py.cksum) != \
-        $(cksum $OPENSHIFT_REPO_DIR/dascraper/clubs/spreadsheet.py) ]]; then
+    if [[ $(cat $OPENSHIFT_DATA_DIR/spreadsheet.docx.cksum) != \
+        $(cksum $OPENSHIFT_REPO_DIR/dascraper/clubs/spreadsheet.docx) ]]; then
         generate_clubs
     fi
 fi
