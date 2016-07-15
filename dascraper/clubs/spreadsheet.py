@@ -92,7 +92,7 @@ def split_dates(dates):
     """
     Given a string of dates with arbitrary separators, return an array of ISO
     dates
-    >>> split_dates("4/8, 15, 22, 29")
+    >>> split_dates("4/8, 15, 22, 29, 620")
         ["2016-04-08", "2016-04-15", "2016-04-22", "2016-04-29"]
     """
 
@@ -102,25 +102,26 @@ def split_dates(dates):
     # Remove all whitespace from dates string, leaving only commas for splitting
     dates = ''.join(dates.split()).split(',')
 
-    month = 0
+    invalid_dates = []
 
     # Since we're modifying the list in place, we need the current index
-    for i, date in enumerate(dates):
-        date_has_month = bool('/' in date)
+    for i, d in enumerate(dates):
+        date_has_month = bool('/' in d)
         if date_has_month:
-            # Separate the month and date into two variables
-            month = int(date[:date.index('/')])
-            date = int(date[date.index('/') + 1:])
+            # Based on the '/' month separator, record the month and date
+            month = int(d[:d.index('/')])
+            date = int(d[d.index('/') + 1:])
         else:
-            date = int(date)
+            date = int(d)
 
         try:
             dates[i] = datetime.date(WORD_DOC_YEAR, month, date).isoformat()
         except ValueError:
             logging.exception("Invalid date in spreadsheet: \"{}\"".format(date))
+            invalid_dates.append(d)
             continue
 
-    return dates
+    return [d for d in dates if d not in invalid_dates]
 
 
 def main():
