@@ -79,10 +79,10 @@ def split_days(days):
 
     # Leave only letters and spaces, so that split() works consistently
     days = ''.join(
-        c
-        for c in days
-        if c.isalpha()
-        or c.isspace()
+        char
+        for char in days
+        if char.isalpha()
+        or char.isspace()
     ).split()
 
     return [day[0:3].capitalize() for day in days]
@@ -105,20 +105,20 @@ def split_dates(dates):
     invalid_dates = []
 
     # Since we're modifying the list in place, we need the current index
-    for i, d in enumerate(dates):
-        date_has_month = bool('/' in d)
+    for i, date in enumerate(dates):
+        date_has_month = bool('/' in date)
         if date_has_month:
             # Based on the '/' month separator, record the month and date
-            month = int(d[:d.index('/')])
-            date = int(d[d.index('/') + 1:])
+            month = int(date[:date.index('/')])
+            date = int(date[date.index('/') + 1:])
         else:
-            date = int(d)
+            day = int(date)
 
         try:
-            dates[i] = datetime.date(WORD_DOC_YEAR, month, date).isoformat()
+            dates[i] = datetime.date(WORD_DOC_YEAR, month, day).isoformat()
         except ValueError:
             logging.exception("Invalid date in spreadsheet: \"{}\"".format(date))
-            invalid_dates.append(d)
+            invalid_dates.append(date)
             continue
 
     return [d for d in dates if d not in invalid_dates]
