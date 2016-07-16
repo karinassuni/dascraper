@@ -15,11 +15,16 @@ def parse(html):
     logging.debug("Parsing calendar event: {}...".format(event["name"]))
 
     for f in EVENT_FIELDS:
-        event[f] = root.xpath(
-            '//td[contains(., "{}")]/following-sibling::*/text()'
-            # The raw fields in HTML are capitalized
-            .format(f.capitalize())
-        )[0]
+        try:
+            event[f] = root.xpath(
+                '//td[contains(., "{}")]/following-sibling::*/text()'
+                # The raw fields in HTML are capitalized
+                .format(f.capitalize())
+            )[0]
+        except IndexError:
+            logging.warning("'{name}' has no {field}"
+                            .format(name=event["name"], field=f))
+            event[f] = ''
 
     logging.debug("Finished parsing calendar event: {}".format(event["name"]))
     return clean(event)
@@ -45,10 +50,13 @@ def clean(event):
         event["time"]
         .split('-')[0]
     )
-    event["end_time"] = clean_time.isoformat(
-        event["time"]
-        .split('-')[1]
-    )
+    try:
+        event["end_time"] = clean_time.isoformat(
+            event["time"]
+            .split('-')[1]
+        )
+    except IndexError:
+        event["end_time"] = ''
 
     # start_time and end_time found; raw "time" no longer needed
     event.pop("time", None)
