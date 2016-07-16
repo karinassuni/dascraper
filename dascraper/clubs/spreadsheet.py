@@ -3,7 +3,7 @@ import docx
 import json
 import logging
 import os
-from dascraper.utility import cleantime
+from dascraper.utility import clean_time
 
 
 # Path arguments in os.path are relative to the present working directory
@@ -46,14 +46,14 @@ def clean(club):
     club["days"] = split_days(club["days"])
     club["dates"] = split_dates(club["dates"])
 
-    club["start_time"] = cleantime.iso(
+    club["start_time"] = clean_time.isoformat(
         club["time"]
         .split("-")[0]
     )
 
     # Not all clubs have end times
     try:
-        club["end_time"] = cleantime.iso(
+        club["end_time"] = clean_time.isoformat(
             club["time"]
             .split("-")[1]
         )

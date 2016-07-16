@@ -1,6 +1,6 @@
 import datetime
 import logging
-from dascraper.utility import cleantime
+from dascraper.utility import clean_time
 from lxml import etree
 
 
@@ -41,11 +41,11 @@ def clean(event):
         .isoformat()
     )
 
-    event["start_time"] = cleantime.iso(
+    event["start_time"] = clean_time.isoformat(
         event["time"]
         .split('-')[0]
     )
-    event["end_time"] = cleantime.iso(
+    event["end_time"] = clean_time.isoformat(
         event["time"]
         .split('-')[1]
     )
