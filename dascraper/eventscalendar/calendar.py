@@ -3,8 +3,8 @@ import json
 import logging
 import os
 import requests
-from dascraper.eventcalendar import event
 from lxml import etree
+from . import event
 
 
 BASE_URL = "https://www.deanza.edu/eventscalendar/"

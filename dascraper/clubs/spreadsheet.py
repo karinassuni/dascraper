@@ -3,7 +3,7 @@ import docx
 import json
 import logging
 import os
-from dascraper import cleantime
+from dascraper.utility import clean_time
 
 
 # Path arguments in os.path are relative to the present working directory
@@ -46,14 +46,14 @@ def clean(club):
     club["days"] = split_days(club["days"])
     club["dates"] = split_dates(club["dates"])
 
-    club["start_time"] = cleantime.iso(
+    club["start_time"] = clean_time.isoformat(
         club["time"]
         .split("-")[0]
     )
 
     # Not all clubs have end times
     try:
-        club["end_time"] = cleantime.iso(
+        club["end_time"] = clean_time.isoformat(
             club["time"]
             .split("-")[1]
         )
@@ -79,10 +79,10 @@ def split_days(days):
 
     # Leave only letters and spaces, so that split() works consistently
     days = ''.join(
-        c
-        for c in days
-        if c.isalpha()
-        or c.isspace()
+        char
+        for char in days
+        if char.isalpha()
+        or char.isspace()
     ).split()
 
     return [day[0:3].capitalize() for day in days]
@@ -92,7 +92,7 @@ def split_dates(dates):
     """
     Given a string of dates with arbitrary separators, return an array of ISO
     dates
-    >>> split_dates("4/8, 15, 22, 29")
+    >>> split_dates("4/8, 15, 22, 29, 620")
         ["2016-04-08", "2016-04-15", "2016-04-22", "2016-04-29"]
     """
 
@@ -100,27 +100,28 @@ def split_dates(dates):
     WORD_DOC_YEAR = int(WORD_DOC.tables[0].cell(0, 3).text.split()[0])
 
     # Remove all whitespace from dates string, leaving only commas for splitting
-    dates = ''.join(dates.split()).split(',')
+    dates_list = ''.join(dates.split()).split(',')
 
-    month = 0
+    invalid_dates = []
 
     # Since we're modifying the list in place, we need the current index
-    for i, date in enumerate(dates):
+    for i, date in enumerate(dates_list):
         date_has_month = bool('/' in date)
         if date_has_month:
-            # Separate the month and date into two variables
+            # Based on the '/' month separator, record the month and date
             month = int(date[:date.index('/')])
-            date = int(date[date.index('/') + 1:])
+            day = int(date[date.index('/') + 1:])
         else:
-            date = int(date)
+            day = int(date)
 
         try:
-            dates[i] = datetime.date(WORD_DOC_YEAR, month, date).isoformat()
+            dates_list[i] = datetime.date(WORD_DOC_YEAR, month, day).isoformat()
         except ValueError:
-            logging.exception("Invalid date in spreadsheet: \"{}\"".format(date))
+            logging.debug("Invalid date in spreadsheet: \"{}\"".format(date))
+            invalid_dates.append(date)
             continue
 
-    return dates
+    return [d for d in dates_list if d not in invalid_dates]
 
 
 def main():
