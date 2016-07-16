@@ -2,8 +2,8 @@ import datetime
 import json
 import logging
 import requests
-from dascraper.eventscalendar import event
 from lxml import etree
+from . import event
 
 
 BASE_URL = "https://www.deanza.edu/eventscalendar/"
