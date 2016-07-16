@@ -117,7 +117,7 @@ def split_dates(dates):
         try:
             dates_list[i] = datetime.date(WORD_DOC_YEAR, month, day).isoformat()
         except ValueError:
-            logging.exception("Invalid date in spreadsheet: \"{}\"".format(date))
+            logging.debug("Invalid date in spreadsheet: \"{}\"".format(date))
             invalid_dates.append(date)
             continue
 

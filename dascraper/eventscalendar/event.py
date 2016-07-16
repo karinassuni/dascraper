@@ -12,7 +12,7 @@ def parse(html):
     event["name"] = parse.find_name(root)[0]
     event["source"] = "DA Calendar"
 
-    logging.debug("Parsing calendar event: {}...".format(event["name"]))
+    logging.info("Parsing calendar event: {}...".format(event["name"]))
 
     for f in EVENT_FIELDS:
         try:
@@ -22,11 +22,11 @@ def parse(html):
                 .format(f.capitalize())
             )[0]
         except IndexError:
-            logging.warning("'{name}' has no {field}"
+            logging.debug("'{name}' has no {field}"
                             .format(name=event["name"], field=f))
             event[f] = ''
 
-    logging.debug("Finished parsing calendar event: {}".format(event["name"]))
+    logging.info("Finished parsing calendar event: {}".format(event["name"]))
     return clean(event)
 
 parse.find_name = etree.XPath(
