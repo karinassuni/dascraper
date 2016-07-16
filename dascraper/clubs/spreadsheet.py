@@ -100,12 +100,12 @@ def split_dates(dates):
     WORD_DOC_YEAR = int(WORD_DOC.tables[0].cell(0, 3).text.split()[0])
 
     # Remove all whitespace from dates string, leaving only commas for splitting
-    dates = ''.join(dates.split()).split(',')
+    dates_list = ''.join(dates.split()).split(',')
 
     invalid_dates = []
 
     # Since we're modifying the list in place, we need the current index
-    for i, date in enumerate(dates):
+    for i, date in enumerate(dates_list):
         date_has_month = bool('/' in date)
         if date_has_month:
             # Based on the '/' month separator, record the month and date
@@ -115,13 +115,13 @@ def split_dates(dates):
             day = int(date)
 
         try:
-            dates[i] = datetime.date(WORD_DOC_YEAR, month, day).isoformat()
+            dates_list[i] = datetime.date(WORD_DOC_YEAR, month, day).isoformat()
         except ValueError:
             logging.exception("Invalid date in spreadsheet: \"{}\"".format(date))
             invalid_dates.append(date)
             continue
 
-    return [d for d in dates if d not in invalid_dates]
+    return [d for d in dates_list if d not in invalid_dates]
 
 
 def main():
