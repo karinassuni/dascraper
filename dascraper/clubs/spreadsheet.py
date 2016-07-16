@@ -110,7 +110,7 @@ def split_dates(dates):
         if date_has_month:
             # Based on the '/' month separator, record the month and date
             month = int(date[:date.index('/')])
-            date = int(date[date.index('/') + 1:])
+            day = int(date[date.index('/') + 1:])
         else:
             day = int(date)
 
