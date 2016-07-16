@@ -1,4 +1,4 @@
-import dascraper.eventcalendar.calendar as calendar
+import dascraper.eventscalendar.calendar as calendar
 import dascraper.clubs.__main__ as clubs
 
 

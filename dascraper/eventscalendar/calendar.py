@@ -2,7 +2,7 @@ import datetime
 import json
 import logging
 import requests
-from dascraper.eventcalendar import event
+from dascraper.eventscalendar import event
 from lxml import etree
 
 
