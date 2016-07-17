@@ -1,6 +1,7 @@
 import difflib
 import json
 import logging
+import os
 import re
 from . import catalogue
 from . import spreadsheet
