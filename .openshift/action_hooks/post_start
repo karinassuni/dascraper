@@ -22,7 +22,7 @@ ln -sf $OPENSHIFT_DATA_DIR/json $OPENSHIFT_REPO_DIR/wsgi/static/json
 generate_clubs ()
 {
     cd $OPENSHIFT_REPO_DIR
-    python -m dascraper.clubs.spreadsheet
+    python -m dascraper.clubs
     mv clubs.json $OPENSHIFT_DATA_DIR/json
 }
 
