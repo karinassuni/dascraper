@@ -125,7 +125,7 @@ def split_dates(dates):
 
 
 def main():
-    with open("clubs.json", 'w') as o:
+    with open("clubs_without_descriptions.json", 'w') as o:
         json.dump(parse(), o, sort_keys=True, indent=4, separators=(',', ': '))
 
 

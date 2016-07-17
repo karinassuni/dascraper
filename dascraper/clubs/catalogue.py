@@ -1,4 +1,5 @@
 import dascraper.utility.requests as requests
+import json
 from lxml import etree
 
 
@@ -19,3 +20,12 @@ def parse():
         for n, d
         in zip(club_names, club_descriptions)
     ]
+
+
+def main():
+    with open("clubs_with_only_descriptions.json", 'w') as o:
+        json.dump(parse(), o, sort_keys=True, indent=4, separators=(',', ': '))
+
+
+if __name__ == "__main__":
+    main()
