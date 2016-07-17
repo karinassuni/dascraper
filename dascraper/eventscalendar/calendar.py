@@ -1,7 +1,7 @@
+import dascraper.utility.requests as requests
 import datetime
 import json
 import logging
-import requests
 from lxml import etree
 from . import event
 
@@ -30,27 +30,15 @@ crawl.find_month = etree.XPath(
 )
 
 
-def get_request(func):
-    def decorator(*args):
-        try:
-            r = requests.get(*args)
-        except requests.exceptions.RequestException:
-            logging.exception("Something went wrong with the request! Exiting...")
-            sys.exit(1)
-        else:
-            return func(r.content)
-    return decorator
-
-
-@get_request
-def parse(html):
+@requests.get
+def parse(response):
     events = []
 
     def event_url_handler(url):
-        r = requests.get(url)
+        r = requests.attempt("GET", url)
         events.append(event.parse(r.content))
 
-    crawl(html, event_url_handler)
+    crawl(response.content, event_url_handler)
 
     return events
 

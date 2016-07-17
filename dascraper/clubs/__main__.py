@@ -25,7 +25,7 @@ def filter_words(club_name):
         # Remove common_substrings and their plurals
         club_name = re.sub(s + 's?', '', club_name)
 
-    # Remove club initialism from name
+    # Remove club initialism
     club_name = re.sub('\(.*\)$', '', club_name)
 
     # Normalize spaces
@@ -65,7 +65,7 @@ def main():
         if matched_d:
             clubs_with_only_descriptions.remove(matched_d)
         else:
-            logging.info(
+            logging.debug(
                 "{} has no corresponding catlaogue entry w/ description"
                 .format(c["name"])
             )
