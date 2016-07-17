@@ -70,8 +70,15 @@ def main():
                 .format(c["name"])
             )
 
-    with open("clubs.json", 'w') as o:
-        json.dump(clubs_without_descriptions, o, sort_keys=True, indent=4, separators=(',', ': '))
+    try:
+        with open(os.path.join(
+            os.environ.get("OPENSHIFT_DATA_DIR"), "json/", "clubs.json"), 'w') as o:
+                json.dump(clubs_without_descriptions, o, sort_keys=True,
+                     indent=4, separators=(',', ': '))
+
+    except KeyError:
+        logging.error("SOMETHING IS WRONG WITH $OPENSHIFT_DATA_DIR, could not "
+                      "save calendarevents.json!")
 
 if __name__ == "__main__":
     main()
