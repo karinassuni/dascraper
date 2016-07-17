@@ -29,6 +29,7 @@ def parse(html):
     logging.info("Finished parsing calendar event: {}".format(event["name"]))
     return clean(event)
 
+
 parse.find_name = etree.XPath(
     '//div[@id="cal_div_obj"]/h2/text()'
 )

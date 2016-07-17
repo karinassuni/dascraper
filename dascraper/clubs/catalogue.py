@@ -1,6 +1,7 @@
 import dascraper.utility.requests as requests
 from lxml import etree
 
+
 def parse():
     r = requests.attempt("GET", "https://www.deanza.edu/clubs/clublist_name.html")
 

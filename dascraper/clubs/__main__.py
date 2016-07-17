@@ -73,5 +73,6 @@ def main():
     with open("clubs.json", 'w') as o:
         json.dump(clubs_without_descriptions, o, sort_keys=True, indent=4, separators=(',', ': '))
 
+
 if __name__ == "__main__":
     main()
