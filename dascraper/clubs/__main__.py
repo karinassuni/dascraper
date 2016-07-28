@@ -66,7 +66,7 @@ def main():
             clubs_with_only_descriptions.remove(matched_d)
         else:
             logging.debug(
-                "{} has no corresponding catlaogue entry w/ description"
+                "{} has no corresponding catalogue entry w/ description"
                 .format(c["name"])
             )
 
