@@ -6,7 +6,13 @@ from . import catalogue
 from . import spreadsheet
 
 
-def filter_words(club_name):
+def string_similarity(a, b):
+    return difflib.SequenceMatcher(
+        a=filter_name(a), b=filter_name(b)
+    ).ratio()
+
+
+def filter_name(club_name):
     common_substrings = [
         "De Anza College",
         "De Anza",
@@ -34,44 +40,33 @@ def filter_words(club_name):
     return club_name
 
 
-def similarity(str1, str2):
-    return difflib.SequenceMatcher(
-        a=filter_words(str1), b=filter_words(str2)
-    ).ratio()
-
-
-def main():
-    clubs_with_only_descriptions = catalogue.parse()
-    clubs_without_descriptions = spreadsheet.parse()
-
-    for c in clubs_without_descriptions:
-        best_similarity = 0.68
-        matched_d = {}
-        for d in clubs_with_only_descriptions:
-            if c["name"].lower() == d["name"].lower() \
-            or similarity(c["name"], d["name"]) >= 0.8:
-                c["description"] = d["description"]
-                matched_d = d
+def merge_clubs(spreadsheet, catalogue):
+    for s in spreadsheet:
+        match = {}
+        for c in catalogue:
+            if s["name"].lower() == c["name"].lower() \
+            or string_similarity(s["name"], c["name"]) >= 0.8:
+                s["description"] = c["description"]
+                match = c
                 break
-            elif similarity(c["name"], d["name"]) >= best_similarity:
-                c["description"] = d["description"]
-                matched_d = d
-                best_similarity = similarity(c["name"], d["name"])
-                logging.info("{0} || {1} : {2}".format(
-                    filter_words(c["name"]),
-                    filter_words(d["name"]),
-                    similarity(c["name"], d["name"])
-                ))
-        if matched_d:
-            clubs_with_only_descriptions.remove(matched_d)
+        if match:
+            catalogue.remove(match)
         else:
             logging.debug(
                 "{} has no corresponding catalogue entry w/ description"
-                .format(c["name"])
+                .format(s["name"])
             )
+    return spreadsheet
+
+
+def main():
+    only_descriptions = catalogue.parse()
+    all_but_descriptions = spreadsheet.parse()
+
+    clubs = merge_clubs(all_but_descriptions, only_descriptions)
 
     with open("clubs.json", 'w') as o:
-        json.dump(clubs_without_descriptions, o, sort_keys=True, indent=4, separators=(',', ': '))
+        json.dump(clubs, o, sort_keys=True, indent=4, separators=(',', ': '))
 
 
 if __name__ == "__main__":
