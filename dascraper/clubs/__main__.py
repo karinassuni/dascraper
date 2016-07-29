@@ -53,7 +53,7 @@ def merge_clubs(spreadsheet, catalogue):
             catalogue.remove(match)
         else:
             logging.debug(
-                "{} has no corresponding catalogue entry w/ description"
+                "{} has no corresponding catalogue entry; description is empty"
                 .format(s["name"])
             )
     return spreadsheet
