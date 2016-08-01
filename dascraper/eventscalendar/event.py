@@ -36,7 +36,6 @@ parse.find_name = etree.XPath(
 
 
 def clean(event):
-
     for field, value in event.items():
         event[field] = value.strip()
 

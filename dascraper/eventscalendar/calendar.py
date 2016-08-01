@@ -10,7 +10,6 @@ BASE_URL = "https://www.deanza.edu/eventscalendar/"
 
 
 def crawl(html, link_handler):
-
     root = etree.HTML(html)
 
     month = crawl.find_month(root)[0]

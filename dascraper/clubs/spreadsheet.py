@@ -39,7 +39,6 @@ def parse():
 
 
 def clean(club):
-
     for field, value in club.items():
         club[field] = value.strip()
 
