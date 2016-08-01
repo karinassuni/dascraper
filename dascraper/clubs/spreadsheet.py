@@ -16,7 +16,7 @@ WORD_DOC = docx.Document(os.path.join(
 def parse():
     logging.info("Parsing the club spreadsheet...")
 
-    RAW_FIELDS = ('', "name", "days", "dates", "time", "location", '')
+    COLUMNS = ('', "name", "days", "dates", "time", "location", '')
     FIRST_ROW = 3
     clubs = []
 
@@ -24,12 +24,12 @@ def parse():
         for row in table.rows[FIRST_ROW:]:
             row_cells = row.cells
             club_is_active = bool(
-                row_cells[RAW_FIELDS.index("dates")]
+                row_cells[COLUMNS.index("dates")]
                 .text.strip() != ''
             )
             if club_is_active:
                 club = clean({
-                    RAW_FIELDS[i]: cell.text
+                    COLUMNS[i]: cell.text
                     for i, cell in enumerate(row_cells)
                 })
                 clubs.append(club)
@@ -62,7 +62,7 @@ def clean(club):
     # start_time and end_time found; raw "time" no longer needed
     club.pop("time", None)
 
-    # Remove '' key generated from the blank RAW_FIELDS
+    # Remove '' key generated from the blank COLUMNS
     club.pop('', None)
 
     return club
