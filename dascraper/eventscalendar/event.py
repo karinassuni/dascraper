@@ -9,7 +9,7 @@ def parse(html):
     EVENT_FIELDS = ("description", "date", "time", "location", "sponsor")
 
     event = {}
-    event["name"] = parse.find_name(root)[0]
+    event["name"] = parse.name(root)[0]
     event["source"] = "DA Calendar"
 
     logging.info("Parsing calendar event: {}...".format(event["name"]))
@@ -30,7 +30,7 @@ def parse(html):
     return clean(event)
 
 
-parse.find_name = etree.XPath(
+parse.name = etree.XPath(
     '//div[@id="cal_div_obj"]/h2/text()'
 )
 

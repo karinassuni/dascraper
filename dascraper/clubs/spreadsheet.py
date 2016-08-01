@@ -24,7 +24,7 @@ def parse():
         for row in table.rows[FIRST_ROW:]:
             row_cells = row.cells
             club_is_active = bool(
-                row_cells[(RAW_FIELDS.index("dates"))]
+                row_cells[RAW_FIELDS.index("dates")]
                 .text.strip() != ''
             )
             if club_is_active:

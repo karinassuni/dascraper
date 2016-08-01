@@ -12,19 +12,21 @@ BASE_URL = "https://www.deanza.edu/eventscalendar/"
 def crawl(html, link_handler):
     root = etree.HTML(html)
 
-    month = crawl.find_month(root)[0]
+    month = crawl.month(root)[0]
     logging.info("Crawling the {} calendar...".format(month))
 
-    for e in crawl.find_event_path_components(root):
+    for e in crawl.event_parameters(root):
         link_handler(BASE_URL + e)
 
     logging.info("Finished crawling the {} calendar".format(month))
 
 
-crawl.find_event_path_components = etree.XPath(
+# PHP filename included
+crawl.event_parameters = etree.XPath(
     '//a[@class="entry"]/attribute::href'
 )
-crawl.find_month = etree.XPath(
+
+crawl.month = etree.XPath(
     '//span[@class="date"]/text()'
 )
 
