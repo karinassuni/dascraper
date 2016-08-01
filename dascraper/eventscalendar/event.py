@@ -10,7 +10,6 @@ def parse(html):
 
     event = {}
     event["name"] = parse.name(root)[0]
-    event["source"] = "DA Calendar"
 
     logging.info("Parsing calendar event: {}...".format(event["name"]))
 
