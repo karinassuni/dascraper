@@ -6,7 +6,7 @@ from . import catalogue
 from . import spreadsheet
 
 
-def string_similarity(a, b):
+def name_similarity(a, b):
     return difflib.SequenceMatcher(
         a=filter_name(a), b=filter_name(b)
     ).ratio()
@@ -45,7 +45,7 @@ def merge_clubs(spreadsheet, catalogue):
         match = {}
         for c in catalogue:
             if s["name"].lower() == c["name"].lower() \
-            or string_similarity(s["name"], c["name"]) >= 0.8:
+            or name_similarity(s["name"], c["name"]) >= 0.8:
                 s["description"] = c["description"]
                 match = c
                 break
