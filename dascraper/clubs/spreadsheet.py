@@ -62,7 +62,7 @@ def clean(club):
     # start_time and end_time found; raw "time" no longer needed
     club.pop("time", None)
 
-    # Remove '' key generated from the blank raw fields
+    # Remove '' key generated from the blank RAW_FIELDS
     club.pop('', None)
 
     return club
@@ -77,14 +77,14 @@ def split_days(days):
     """
 
     # Leave only letters and spaces, so that split() works consistently
-    days = ''.join(
+    days_list = ''.join(
         char
         for char in days
         if char.isalpha()
         or char.isspace()
     ).split()
 
-    return [day[0:3].capitalize() for day in days]
+    return [day[0:3].capitalize() for day in days_list]
 
 
 def split_dates(dates):
@@ -120,7 +120,7 @@ def split_dates(dates):
             invalid_dates.append(date)
             continue
 
-    return [d for d in dates_list if d not in invalid_dates]
+    return [date for date in dates_list if date not in invalid_dates]
 
 
 def main():
