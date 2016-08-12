@@ -40,30 +40,30 @@ def filter_name(club_name):
     return club_name
 
 
-def merge_clubs(spreadsheet, catalogue):
-    for s in spreadsheet:
+def absorb_descriptions(source, target):
+    for t in target:
         match = {}
-        for c in catalogue:
-            if s["name"].lower() == c["name"].lower() \
-            or name_similarity(s["name"], c["name"]) >= 0.8:
-                s["description"] = c["description"]
-                match = c
+        for s in source:
+            if t["name"].lower() == s["name"].lower() \
+            or name_similarity(t["name"], s["name"]) >= 0.8:
+                t.update(s)
+                match = s
                 break
         if match:
-            catalogue.remove(match)
+            source.remove(match)
         else:
             logging.debug(
-                "{} has no corresponding catalogue entry; description is empty"
-                .format(s["name"])
+                "{} has no corresponding source entry; description nulled"
+                .format(t["name"])
             )
-    return spreadsheet
+    return target
 
 
 def main():
-    only_descriptions = catalogue.parse()
-    all_but_descriptions = spreadsheet.parse()
+    catalogue_clubs = catalogue.parse()
+    spreadsheet_clubs = spreadsheet.parse()
 
-    clubs = merge_clubs(all_but_descriptions, only_descriptions)
+    clubs = absorb_descriptions(catalogue_clubs, spreadsheet_clubs)
 
     with open("clubs.json", 'w') as o:
         json.dump(clubs, o, sort_keys=True, indent=4, separators=(',', ': '))

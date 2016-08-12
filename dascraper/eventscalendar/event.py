@@ -38,28 +38,35 @@ def clean(event):
     for field, value in event.items():
         event[field] = value.strip()
 
-    event["date"] = (
+    date = (
         datetime.datetime
         .strptime(event["date"], "%A, %B %d, %Y")
         .date()
         .isoformat()
     )
 
-    event["start_time"] = clean_time.isoformat(
-        event["time"]
-        .split('-')[0]
+    event["start"] = date + 'T' + (
+        clean_time.isoformat(
+            event["time"]
+            .split('-')[0]
+        )
     )
 
     # Not all events have end times
     try:
-        event["end_time"] = clean_time.isoformat(
-            event["time"]
-            .split('-')[1]
+        event["end"] = date + 'T' + (
+            clean_time.isoformat(
+                event["time"]
+                .split('-')[1]
+            )
         )
     except IndexError:
-        event["end_time"] = ''
+        event["end"] = ''
 
-    # start_time and end_time found; raw "time" no longer needed
+    # start and end found; raw time no longer needed
     event.pop("time", None)
+
+    # date already incorporated into start and end
+    event.pop("date", None)
 
     return event
