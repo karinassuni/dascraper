@@ -4,7 +4,7 @@ import datetime
 
 def meridiem(time):
     """
-    Returns time with an ISO-compatible meridiem
+    Returns time with a normalized meridiem
     >>> period("5:30 pom ")
         "5:30PM"
     """
@@ -14,7 +14,7 @@ def meridiem(time):
     except AttributeError as error:
         raise ValueError("''{}' is not a valid 12-hour time".format(time)) from error
 
-    # Handle 24 hour times
+    # Convert 24 hour times to meridiem times
     hour = int(hhmm[:hhmm.index(':')])
     if hour == 0:
         return "12:00AM"
