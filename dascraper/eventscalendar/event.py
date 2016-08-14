@@ -1,5 +1,6 @@
-import datetime
+import dateutil.parser
 import logging
+import pytz
 from collections import OrderedDict
 from dascraper.utility import clean_time
 from lxml import etree
@@ -39,30 +40,24 @@ def clean(event):
     for field, value in event.items():
         event[field] = value.strip()
 
-    date = (
-        datetime.datetime
-        .strptime(event["date"], "%A, %B %d, %Y")
-        .date()
-        .isoformat()
-    )
-
-    event["start"] = date + 'T' + (
-        clean_time.isoformat(
-            event["time"]
-            .split('-')[0]
-        )
-    )
-
-    # Not all events have end times
     try:
-        event["end"] = date + 'T' + (
-            clean_time.isoformat(
-                event["time"]
-                .split('-')[1]
-            )
+        start_time, end_time = event["time"].split('-')
+    # Not all events have end times
+    except ValueError:
+        end_time = start_time
+
+    event["start"], event["end"] = tuple(
+        dateutil.parser.parse(
+            event["date"]
+            + ' '
+            + clean_time.meridiem(t)
         )
-    except IndexError:
-        event["end"] = ''
+        .replace(tzinfo=pytz.timezone("US/Pacific"))
+        .isoformat()
+        for t in (start_time, end_time)
+    )
+    if event["start"] == event["end"]:
+        end = ''
 
     # start and end found; raw time no longer needed
     event.pop("time", None)
