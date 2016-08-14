@@ -56,7 +56,7 @@ def main():
 
     with open("calendarevents.json", 'w') as o:
         json.dump(events_this_month + events_next_month, o,
-            sort_keys=True, indent=4, separators=(',', ': '))
+            indent=4, separators=(',', ': '))
 
     logging.info("Parsing complete! Saved to calendarevents.json")
 

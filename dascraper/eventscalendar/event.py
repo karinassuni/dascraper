@@ -1,5 +1,6 @@
 import datetime
 import logging
+from collections import OrderedDict
 from dascraper.utility import clean_time
 from lxml import etree
 
@@ -69,4 +70,10 @@ def clean(event):
     # date already incorporated into start and end
     event.pop("date", None)
 
-    return event
+    # Normalize key order
+    order = ("name", "description", "location", "sponsor", "start", "end")
+    ordered_event = OrderedDict()
+    for key in order:
+        ordered_event[key] = event[key]
+
+    return ordered_event
