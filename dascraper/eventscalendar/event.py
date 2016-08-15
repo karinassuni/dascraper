@@ -59,16 +59,23 @@ def clean(event):
     if event["start"] == event["end"]:
         end = ''
 
-    # start and end found; raw time no longer needed
-    event.pop("time", None)
-
-    # date already incorporated into start and end
-    event.pop("date", None)
-
-    # Normalize key order
+    # Normalize key order and purge intermediary keys
     order = ("name", "description", "location", "sponsor", "start", "end")
     ordered_event = OrderedDict()
     for key in order:
-        ordered_event[key] = event[key]
+        # Rename "sponsor" field "organization"
+        if key == "sponsor":
+            ordered_event["organization"] = event["sponsor"]
+        else:
+            ordered_event[key] = event[key]
 
-    return ordered_event
+    return follow_rules(ordered_event)
+
+def follow_rules(event):
+    # Transfer events don't have a sponsor field
+    if "UC" in event["name"] \
+    or "Transfer Center" in event["location"].capitalize():
+        event["organization"] = "Transfer Center"
+
+    return event
+
