@@ -16,7 +16,7 @@ WORD_DOC = docx.Document(os.path.join(
 def parse():
     logging.info("Parsing the club spreadsheet...")
 
-    COLUMNS = ('', "name", "days", "dates", "time", "location", '')
+    COLUMNS = ('', "name", "meetingDays", "meetings", "time", "location", '')
     FIRST_ROW = 3
     clubs = []
 
@@ -24,7 +24,7 @@ def parse():
         for row in table.rows[FIRST_ROW:]:
             row_cells = row.cells
             club_is_active = bool(
-                row_cells[COLUMNS.index("dates")]
+                row_cells[COLUMNS.index("meetings")]
                 .text.strip() != ''
             )
             if club_is_active:
@@ -42,28 +42,30 @@ def clean(club):
     for field, value in club.items():
         club[field] = value.strip()
 
-    club["days"] = split_days(club["days"])
-    club["dates"] = split_dates(club["dates"])
+    club["meetingDays"] = split_days(club["meetingDays"])
+    club["meetings"] = split_dates(club["meetings"])
 
-    club["start_time"] = clean_time.isoformat(
+    club["startTime"] = clean_time.isoformat(
         club["time"]
         .split("-")[0]
     )
 
-    # Not all clubs have end times
+    # Not all club meetings have end times
     try:
-        club["end_time"] = clean_time.isoformat(
+        club["endTime"] = clean_time.isoformat(
             club["time"]
             .split("-")[1]
         )
     except IndexError:
-        club["end_time"] = ''
+        club["endTime"] = ''
 
     # start_time and end_time found; raw "time" no longer needed
     club.pop("time", None)
 
     # Remove '' key generated from the blank COLUMNS
     club.pop('', None)
+
+    club["facebookUrl"] = ''
 
     return club
 
