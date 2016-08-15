@@ -69,9 +69,9 @@ def clean(event):
         else:
             ordered_event[key] = event[key]
 
-    return follow_rules(ordered_event)
+    return apply_rules(ordered_event)
 
-def follow_rules(event):
+def apply_rules(event):
     # Transfer events don't have a sponsor field
     if "UC" in event["name"] \
     or "Transfer Center" in event["location"].capitalize():
