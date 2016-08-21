@@ -38,7 +38,10 @@ def parse(response):
     def event_url_handler(url):
         r = requests.attempt("GET", url)
         e = event.parse(r.content)
-        key = e.pop("name") + '|' + e["start"][:e["start"].index('T')]
+
+        start_date = e["start"][:e["start"].index('T')]
+        key = e.pop("name") + '|' + start_date
+
         events[key] = e
 
     crawl(response.content, event_url_handler)

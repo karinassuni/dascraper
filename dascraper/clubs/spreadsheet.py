@@ -20,7 +20,7 @@ def parse():
 
     COLUMNS = ('', "name", "meetingDays", "meetings", "time", "location", '')
     FIRST_ROW = 3
-    clubs = []
+    clubs = {}
 
     for table in WORD_DOC.tables:
         for row in table.rows[FIRST_ROW:]:
@@ -34,7 +34,8 @@ def parse():
                     COLUMNS[i]: cell.text
                     for i, cell in enumerate(row_cells)
                 })
-                clubs.append(club)
+                key = club.pop("name")
+                clubs[key] = club
 
     logging.info("Finished parsing the club spreadsheet")
     return clubs

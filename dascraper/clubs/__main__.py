@@ -41,20 +41,17 @@ def filter_name(club_name):
 
 
 def absorb_descriptions(source, target):
-    for t in target:
-        match = {}
-        for s in source:
-            if t["name"].lower() == s["name"].lower() \
-            or name_similarity(t["name"], s["name"]) >= 0.8:
-                t.update(s)
-                match = s
+    for t_key, t_dict in target.items():
+        for s_key, s_dict in source.items():
+            if t_key.lower() == s_key.lower() \
+            or name_similarity(t_key, s_key) >= 0.8:
+                t_dict.update(s_dict)
+                del source[s_key]
                 break
-        if match:
-            source.remove(match)
         else:
             logging.debug(
                 "{} has no corresponding source entry; description nulled"
-                .format(t["name"])
+                .format(t_key)
             )
     return target
 

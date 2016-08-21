@@ -15,11 +15,11 @@ def parse():
         '//h6[not(a)]/following-sibling::node()[position() = 3]'
     )
 
-    return [
-        {"name": n, "description": d}
+    return {
+        n: {"description": d}
         for n, d
         in zip(club_names, club_descriptions)
-    ]
+    }
 
 
 def main():
