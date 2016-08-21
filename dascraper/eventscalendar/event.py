@@ -42,9 +42,10 @@ def clean(event):
 
     try:
         start_time, end_time = event["time"].split('-')
-    # Not all events have end times
+    # Not all events have end times; if not, equate to start_time to produce a
+    # valid DateTime for here and for clients
     except ValueError:
-        end_time = start_time
+        start_time = end_time = event["time"]
 
     event["start"], event["end"] = tuple(
         dateutil.parser.parse(
