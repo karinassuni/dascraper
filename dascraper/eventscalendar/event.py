@@ -1,7 +1,6 @@
 import dateutil.parser
 import logging
 import pytz
-from collections import OrderedDict
 from dascraper.utility import clean_time
 from lxml import etree
 
@@ -58,17 +57,17 @@ def clean(event):
         for t in (start_time, end_time)
     )
 
-    # Normalize key order and purge intermediary keys
-    order = ("name", "description", "location", "sponsor", "start", "end")
-    ordered_event = OrderedDict()
-    for key in order:
-        # Rename "sponsor" field to "organizationName"
-        if key == "sponsor":
-            ordered_event["organizationName"] = event["sponsor"]
-        else:
-            ordered_event[key] = event[key]
+    # "start" and "end" found; raw "time" no longer needed
+    event.pop("time", None)
 
-    return apply_rules(ordered_event)
+    # "date" already incorporated into "start" and "end"
+    event.pop("date", None)
+
+    # Rename "sponsor" field for clarity
+    event["organizationName"] = event.pop("sponsor")
+
+    return apply_rules(event)
+
 
 def apply_rules(event):
     # Transfer events don't have a sponsor field
