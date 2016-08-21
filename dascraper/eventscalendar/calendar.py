@@ -33,11 +33,13 @@ crawl.month = etree.XPath(
 
 @requests.get
 def parse(response):
-    events = []
+    events = {}
 
     def event_url_handler(url):
         r = requests.attempt("GET", url)
-        events.append(event.parse(r.content))
+        e = event.parse(r.content)
+        key = e.pop("name") + '|' + e["start"][:e["start"].index('T')]
+        events[key] = e
 
     crawl(response.content, event_url_handler)
 
@@ -55,7 +57,7 @@ def main():
     events_next_month = parse(MONTH_PAGE, next_month_query)
 
     with open("calendarevents.json", 'w') as o:
-        json.dump(events_this_month + events_next_month, o,
+        json.dump({**events_this_month, **events_next_month}, o,
             indent=4, separators=(',', ': '))
 
     logging.info("Parsing complete! Saved to calendarevents.json")
