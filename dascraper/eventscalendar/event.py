@@ -73,7 +73,7 @@ def apply_rules(event):
     # Transfer events don't have a sponsor field
     if "UC" in event["name"] \
     or "Transfer Center" in event["location"].capitalize():
-        event["organization"] = "Transfer Center"
+        event["organizationName"] = "Transfer Center"
 
     return event
 
