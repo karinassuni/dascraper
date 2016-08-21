@@ -1,8 +1,10 @@
 import datetime
+import dateutil.parser
 import docx
 import json
 import logging
 import os
+import pytz
 from dascraper.utility import clean_time
 
 
@@ -43,21 +45,34 @@ def clean(club):
         club[field] = value.strip()
 
     club["meetingDays"] = split_days(club["meetingDays"])
-    club["meetings"] = split_dates(club["meetings"])
 
-    club["startTime"] = clean_time.isoformat(
-        club["time"]
-        .split("-")[0]
+    try:
+        start_time, end_time = club["time"].split('-')
+    # Not all club meetings have end times; if not, equate to start_time to
+    # produce a valid DateTime for here and for clients
+    except ValueError:
+        start_time = end_time = club["time"]
+
+    start_time, end_time = tuple(
+        clean_time.meridiem(t)
+        for t in (start_time, end_time)
     )
 
-    # Not all club meetings have end times
-    try:
-        club["endTime"] = clean_time.isoformat(
-            club["time"]
-            .split("-")[1]
+    meeting_intervals = []
+    for meeting_date in split_dates(club["meetings"]):
+        # 1 Date + 2 times = 2 DateTimes
+        start, end = tuple(
+            dateutil.parser.parse(
+                meeting_date
+                + ' '
+                + time
+            )
+            .replace(tzinfo=pytz.timezone("US/Pacific"))
+            .isoformat()
+            for time in (start_time, end_time)
         )
-    except IndexError:
-        club["endTime"] = ''
+        meeting_intervals.append(start + '/' + end)
+    club["meetings"] = meeting_intervals
 
     # start_time and end_time found; raw "time" no longer needed
     club.pop("time", None)
