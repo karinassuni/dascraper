@@ -81,6 +81,7 @@ def clean(club):
     club.pop('', None)
 
     club["facebookUrl"] = ''
+    club["fromSpreadsheet"] = True
 
     return club
 

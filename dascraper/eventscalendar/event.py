@@ -57,16 +57,14 @@ def clean(event):
         .isoformat()
         for t in (start_time, end_time)
     )
-    if event["start"] == event["end"]:
-        end = ''
 
     # Normalize key order and purge intermediary keys
     order = ("name", "description", "location", "sponsor", "start", "end")
     ordered_event = OrderedDict()
     for key in order:
-        # Rename "sponsor" field "organization"
+        # Rename "sponsor" field to "organizationName"
         if key == "sponsor":
-            ordered_event["organization"] = event["sponsor"]
+            ordered_event["organizationName"] = event["sponsor"]
         else:
             ordered_event[key] = event[key]
 
