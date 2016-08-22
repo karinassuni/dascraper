@@ -15,16 +15,25 @@ def parse(html):
     logging.info("Parsing calendar event: {}...".format(event["name"]))
 
     for field in EVENT_FIELDS:
-        try:
-            event[field] = root.xpath(
-                '//td[contains(., "{}")]/following-sibling::*/text()'
-                # The raw fields in HTML are capitalized
-                .format(field.capitalize())
-            )[0]
-        except IndexError:
+        field_value_nodes = root.xpath(
+            '//td[contains(., "{}")]/following-sibling::td/node()'
+            # The raw fields in HTML are capitalized
+            .format(field.capitalize())
+        )
+        if not field_value_nodes:
             logging.debug("'{name}' has no {field}"
                             .format(name=event["name"], field=field))
             event[field] = ''
+        elif field == "description":
+            event["description"] = ''.join([
+                el.values()[0] if isinstance(el, etree._Element)
+                else el
+                for el in field_value_nodes
+                if isinstance(el, str)
+                or (isinstance(el, etree._Element) and el.values() != [])
+            ])
+        else:
+            event[field] = field_value_nodes[0]
 
     logging.info("Finished parsing calendar event: {}".format(event["name"]))
     return clean(event)
