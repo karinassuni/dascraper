@@ -40,7 +40,7 @@ def parse(response):
         e = event.parse(r.content)
 
         start_date = e["start"][:e["start"].index('T')]
-        key = e.pop("name") + '|' + start_date
+        key = start_date + '|' + e.pop("name")
 
         events[key] = e
 
