@@ -103,7 +103,21 @@ def split_days(days):
         or char.isspace()
     ).split()
 
-    return [day[0:3].capitalize() for day in days_list]
+    day_switch = {
+        "Su" : "SUNDAY",
+        "Mo" : "MONDAY",
+        "Tu" : "TUESDAY",
+        "We" : "WEDNESDAY",
+        "Th" : "THURSDAY",
+        "Fr" : "FRIDAY",
+        "Sa" : "SATURDAY"
+    }
+
+    return [
+        day_switch[day]
+        for day in [d[:2] for d in days_list]
+    ]
+
 
 
 def split_dates(dates):
