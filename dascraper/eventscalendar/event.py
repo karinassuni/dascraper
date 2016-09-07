@@ -66,14 +66,16 @@ def clean(event):
         for t in (start_time, end_time)
     )
 
+    # Besides from this source, Events usually have multiple organizations
+    sponsor = event.pop("sponsor")
+    if sponsor != '':
+        event[sponsor] = True
+
     # "start" and "end" found; raw "time" no longer needed
     event.pop("time", None)
 
     # "date" already incorporated into "start" and "end"
     event.pop("date", None)
-
-    # Rename "sponsor" field for clarity
-    event["organizationName"] = event.pop("sponsor")
 
     return apply_rules(event)
 
@@ -82,7 +84,7 @@ def apply_rules(event):
     # Transfer events don't have a sponsor field
     if "UC" in event["name"] \
     or "Transfer Center" in event["location"].capitalize():
-        event["organizationName"] = "Transfer Center"
+        event["Transfer Center"] = True
 
     return event
 
