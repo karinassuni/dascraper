@@ -1,7 +1,5 @@
-import dateutil.parser
+from dascraper.utility.clean_time import to_utc_datetime
 import logging
-import pytz
-from dascraper.utility import clean_time
 from lxml import etree
 
 
@@ -36,6 +34,7 @@ def parse(html):
             event[field] = field_value_nodes[0]
 
     logging.info("Finished parsing calendar event: {}".format(event["name"]))
+
     return clean(event)
 
 
@@ -58,13 +57,7 @@ def clean(event):
         start_time = end_time = event["time"]
 
     event["start"], event["end"] = tuple(
-        dateutil.parser.parse(
-            event["date"]
-            + ' '
-            + clean_time.meridiem(t)
-        )
-        .replace(tzinfo=pytz.timezone("US/Pacific"))
-        .isoformat()
+        to_utc_datetime(event["date"], t).isoformat()
         for t in (start_time, end_time)
     )
 

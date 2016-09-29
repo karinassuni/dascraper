@@ -1,10 +1,8 @@
 import datetime
-import dateutil.parser
 import docx
 import json
 import logging
 import os
-import pytz
 from dascraper.utility import clean_time
 
 
@@ -66,13 +64,7 @@ def clean(club):
     for meeting_date in split_dates(club["meetings"]):
         # 1 Date + 2 times = 2 DateTimes
         start, end = tuple(
-            dateutil.parser.parse(
-                meeting_date
-                + ' '
-                + time
-            )
-            .replace(tzinfo=pytz.timezone("US/Pacific"))
-            .isoformat()
+            clean_time.to_utc_datetime(meeting_date, time).isoformat()
             for time in (start_time, end_time)
         )
         meeting_intervals.append(start + '/' + end)

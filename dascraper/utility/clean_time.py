@@ -1,5 +1,7 @@
-import re
 import datetime
+import dateutil.parser
+import re
+import pytz
 
 
 def meridiem(time):
@@ -52,3 +54,14 @@ def isoformat(time):
             raise
 
     return struct_time.time().isoformat()
+
+
+def to_utc_datetime(date, time):
+    original_tz = pytz.timezone("US/Pacific")
+    return original_tz.localize(
+        dateutil.parser.parse(
+            date
+            + ' '
+            + time
+        )
+    )
