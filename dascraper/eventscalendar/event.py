@@ -48,6 +48,8 @@ def clean(event):
     for field, value in event.items():
         event[field] = value.strip()
 
+    event["description"] = event["description"].replace('\r\n', '\n')
+
     try:
         start_time, end_time = event["time"].split('-')
     # Not all events have end times; if not, equate to start_time to produce a
