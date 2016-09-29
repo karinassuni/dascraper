@@ -1,5 +1,6 @@
-from dascraper.utility.clean_time import to_utc_datetime
 import logging
+import re
+from dascraper.utility.clean_time import to_utc_datetime
 from lxml import etree
 
 
@@ -46,6 +47,12 @@ parse.name = etree.XPath(
 def clean(event):
     for field, value in event.items():
         event[field] = value.strip()
+
+    event["name"], event["sponsor"] = tuple(
+        # Firebase does not allow these characters in keys
+        re.sub('[$#[\].]', '', key)
+        for key in (event["name"], event["sponsor"])
+    )
 
     event["description"] = event["description"].replace('\r\n', '\n')
 
