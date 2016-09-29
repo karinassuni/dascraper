@@ -30,10 +30,13 @@ def parse():
                 .text.strip() != ''
             )
             if club_is_active:
-                club = clean({
-                    COLUMNS[i]: cell.text
-                    for i, cell in enumerate(row_cells)
-                })
+                try:
+                    club = clean({
+                        COLUMNS[i]: cell.text
+                        for i, cell in enumerate(row_cells)
+                    })
+                except ValueError:
+                    continue
                 key = club.pop("name")
                 clubs[key] = club
 

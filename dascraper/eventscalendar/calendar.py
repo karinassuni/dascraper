@@ -37,7 +37,10 @@ def parse(response):
 
     def event_url_handler(url):
         r = requests.attempt("GET", url)
-        e = event.parse(r.content)
+        try:
+            e = event.parse(r.content)
+        except ValueError:
+            return
 
         start_date = e["start"][:e["start"].index('T')]
         key = start_date + '|' + e.pop("name")
