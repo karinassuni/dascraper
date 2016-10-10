@@ -69,7 +69,6 @@ def main():
     today = datetime.date.today()
     next_month_query = {"year": today.year, "month": today.month + 1}
     events_next_month = parse(MONTH_PAGE, next_month_query)
-
     events = merge_two_dicts(events_this_month, events_next_month)
 
     headers = {'content-type': 'application/json'}
