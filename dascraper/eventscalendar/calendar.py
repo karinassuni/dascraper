@@ -52,6 +52,12 @@ def parse(response):
     return events
 
 
+def merge_two_dicts(a, b):
+    c = a.copy()
+    c.update(b)
+    return c
+
+
 def main():
     # Defaults to getting this month's calendar
     MONTH_PAGE = BASE_URL + "month.php"
@@ -61,9 +67,10 @@ def main():
     today = datetime.date.today()
     next_month_query = {"year": today.year, "month": today.month + 1}
     events_next_month = parse(MONTH_PAGE, next_month_query)
+    events = merge_two_dicts(events_this_month, events_next_month)
 
     with open("calendarevents.json", 'w') as o:
-        json.dump({**events_this_month, **events_next_month}, o,
+        json.dump(events, o,
             indent=4, separators=(',', ': '))
 
     logging.info("Parsing complete! Saved to calendarevents.json")
