@@ -53,6 +53,12 @@ def parse(response):
     return events
 
 
+def merge_two_dicts(a, b):
+    c = a.copy()
+    c.update(b)
+    return c
+
+
 def main():
     # Defaults to getting this month's calendar
     MONTH_PAGE = BASE_URL + "month.php"
@@ -66,7 +72,7 @@ def main():
     try:
         with open(os.path.join(
                 os.environ.get("OPENSHIFT_DATA_DIR"), "json/", "calendarevents.json"), 'w') as o:
-            json.dump({**events_this_month, **events_next_month}, o,
+            json.dump(merge_two_dicts(events_this_month, events_next_month), o,
                       indent=4, separators=(',', ': '))
     except KeyError:
         logging.error("SOMETHING IS WRONG WITH $OPENSHIFT_DATA_DIR, could not "
