@@ -3,57 +3,81 @@ import docx
 import json
 import logging
 import os
-from dascraper import cleantime
+from dascraper.utility import clean_time
 
 
 # Path arguments in os.path are relative to the present working directory
 # (the directory from where the module is called), so use the unchanging
 # absolute path to the directory containing this file via `__file__`
 WORD_DOC = docx.Document(os.path.join(
-    os.path.dirname(__file__), os.path.relpath("ClubMeetingsSpring2016.docx")))
+    os.path.dirname(__file__), os.path.relpath("spreadsheet.docx")))
 
 
 def parse():
     logging.info("***** Parsing the club spreadsheet... *****")
 
-    RAW_FIELDS = ('', "name", "days", "dates", "time", "location", '')
+    COLUMNS = ('', "name", "meetingDays", "meetings", "time", "location", '')
     FIRST_ROW = 3
-    clubs = []
+    clubs = {}
 
     for table in WORD_DOC.tables:
         for row in table.rows[FIRST_ROW:]:
             row_cells = row.cells
-            club_is_active = bool(row_cells[(RAW_FIELDS.index("dates"))]
-                                  .text.strip() != '')
+            club_is_active = bool(
+                row_cells[COLUMNS.index("meetings")]
+                .text.strip() != ''
+            )
             if club_is_active:
-                club = clean({
-                    RAW_FIELDS[i]: cell.text
-                    for i, cell in enumerate(row_cells)
-                })
-                clubs.append(club)
+                try:
+                    club = clean({
+                        COLUMNS[i]: cell.text
+                        for i, cell in enumerate(row_cells)
+                    })
+                except ValueError:
+                    continue
+                key = club.pop("name")
+                clubs[key] = club
 
     logging.info("Finished parsing the club spreadsheet")
     return clubs
 
 
 def clean(club):
-    club["name"] = club["name"].strip()
-    club["days"] = split_days(club["days"])
-    club["dates"] = split_dates(club["dates"])
-    club["start_time"] = cleantime.iso(club["time"].split(" - ")[0])
+    for field, value in club.items():
+        club[field] = value.strip()
+
+    club["meetingDays"] = split_days(club["meetingDays"])
 
     try:
-        club["end_time"] = cleantime.iso(club["time"].split(" - ")[1])
-    except IndexError:
-        club["end_time"] = ''
+        start_time, end_time = club["time"].split('-')
+    # Not all club meetings have end times; if not, equate to start_time to
+    # produce a valid DateTime for here and for clients
+    except ValueError:
+        start_time = end_time = club["time"]
 
-    club["location"] = club["location"].strip()
+    start_time, end_time = tuple(
+        clean_time.meridiem(t)
+        for t in (start_time, end_time)
+    )
+
+    meeting_intervals = []
+    for meeting_date in split_dates(club["meetings"]):
+        # 1 Date + 2 times = 2 DateTimes
+        start, end = tuple(
+            clean_time.to_utc_datetime(meeting_date, time).isoformat()
+            for time in (start_time, end_time)
+        )
+        meeting_intervals.append(start + '/' + end)
+    club["meetings"] = meeting_intervals
 
     # start_time and end_time found; raw "time" no longer needed
     club.pop("time", None)
 
-    # Remove '' key generated from the blank raw fields
+    # Remove '' key generated from the blank COLUMNS
     club.pop('', None)
+
+    club["facebookUrl"] = ''
+    club["fromSpreadsheet"] = True
 
     return club
 
@@ -67,21 +91,35 @@ def split_days(days):
     """
 
     # Leave only letters and spaces, so that split() works consistently
-    days = ''.join(
-        c
-        for c in days
-        if c.isalpha()
-        or c.isspace()
+    days_list = ''.join(
+        char
+        for char in days
+        if char.isalpha()
+        or char.isspace()
     ).split()
 
-    return [day[0:3].capitalize() for day in days]
+    day_switch = {
+        "Su" : "SUNDAY",
+        "Mo" : "MONDAY",
+        "Tu" : "TUESDAY",
+        "We" : "WEDNESDAY",
+        "Th" : "THURSDAY",
+        "Fr" : "FRIDAY",
+        "Sa" : "SATURDAY"
+    }
+
+    return [
+        day_switch[day]
+        for day in [d[:2] for d in days_list]
+    ]
+
 
 
 def split_dates(dates):
     """
     Given a string of dates with arbitrary separators, return an array of ISO
     dates
-    >>> split_dates("4/8, 15, 22, 29")
+    >>> split_dates("4/8, 15, 22, 29, 620")
         ["2016-04-08", "2016-04-15", "2016-04-22", "2016-04-29"]
     """
 
@@ -89,31 +127,31 @@ def split_dates(dates):
     WORD_DOC_YEAR = int(WORD_DOC.tables[0].cell(0, 3).text.split()[0])
 
     # Remove all whitespace from dates string, leaving only commas for splitting
-    dates = ''.join(dates.split()).split(',')
+    dates_list = ''.join(dates.split()).split(',')
 
-    month = 0
+    invalid_dates = []
 
     # Since we're modifying the list in place, we need the current index
-    for i, date in enumerate(dates):
+    for i, date in enumerate(dates_list):
         date_has_month = bool('/' in date)
         if date_has_month:
-            # Separate the month and date into two variables
+            # Based on the '/' month separator, record the month and date
             month = int(date[:date.index('/')])
-            date = int(date[date.index('/') + 1:])
+            day = int(date[date.index('/') + 1:])
         else:
-            date = int(date)
+            day = int(date)
 
         try:
-            dates[i] = datetime.date(WORD_DOC_YEAR, month, date).isoformat()
+            dates_list[i] = datetime.date(WORD_DOC_YEAR, month, day).isoformat()
         except ValueError:
-            logging.exception("Invalid date in spreadsheet: \"{}\"".format(date))
+            logging.debug("Invalid date in spreadsheet: \"{}\"".format(date))
+            invalid_dates.append(date)
             continue
 
-    return dates
+    return [date for date in dates_list if date not in invalid_dates]
 
 
 def main():
-
     try:
         with open(os.path.join(
             os.environ.get("OPENSHIFT_DATA_DIR"), "json/", "clubs.json"), 'w') as o:

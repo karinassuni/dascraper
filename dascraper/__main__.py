@@ -1,7 +1,7 @@
-import dascraper.eventcalendar.calendar as calendar
-import dascraper.clubs.spreadsheet as spreadsheet
 import logging
 import os
+import dascraper.eventscalendar.calendar as calendar
+import dascraper.clubs.__main__ as clubs
 
 
 def main():
@@ -14,7 +14,7 @@ def main():
     )
     logging.info("********** NEW PARSE **********")
     calendar.main()
-    spreadsheet.main()
+    clubs.main()
     logging.info("********** DONE PARSE **********")
 
 
