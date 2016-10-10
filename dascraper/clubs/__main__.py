@@ -2,6 +2,7 @@ import difflib
 import json
 import logging
 import re
+import requests
 from . import catalogue
 from . import spreadsheet
 
@@ -61,6 +62,9 @@ def main():
     spreadsheet_clubs = spreadsheet.parse()
 
     clubs = absorb_descriptions(catalogue_clubs, spreadsheet_clubs)
+
+    headers = {'content-type': 'application/json'}
+    requests.patch("https://de-anza-calendar.firebaseio.com/organizations", data=clubs, headers=headers)
 
     with open("clubs.json", 'w') as o:
         json.dump(clubs, o, sort_keys=True, indent=4, separators=(',', ': '))

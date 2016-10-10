@@ -1,8 +1,9 @@
-import dascraper.utility.requests as requests
+import dascraper.utility.requests as requestsutil
 import datetime
 import json
 import logging
 import os
+import requests
 from lxml import etree
 from . import event
 
@@ -32,12 +33,12 @@ crawl.month = etree.XPath(
 )
 
 
-@requests.get
+@requestsutil.get
 def parse(response):
     events = {}
 
     def event_url_handler(url):
-        r = requests.attempt("GET", url)
+        r = requestsutil.attempt("GET", url)
         try:
             e = event.parse(r.content)
         except ValueError:
@@ -69,10 +70,15 @@ def main():
     next_month_query = {"year": today.year, "month": today.month + 1}
     events_next_month = parse(MONTH_PAGE, next_month_query)
 
+    events = merge_two_dicts(events_this_month, events_next_month)
+
+    headers = {'content-type': 'application/json'}
+    requests.patch("https://de-anza-calendar.firebaseio.com/events", data=events, headers=headers)
+
     try:
         with open(os.path.join(
                 os.environ.get("OPENSHIFT_DATA_DIR"), "json/", "calendarevents.json"), 'w') as o:
-            json.dump(merge_two_dicts(events_this_month, events_next_month), o,
+            json.dump(events, o,
                       indent=4, separators=(',', ': '))
     except KeyError:
         logging.error("SOMETHING IS WRONG WITH $OPENSHIFT_DATA_DIR, could not "
