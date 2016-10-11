@@ -48,6 +48,8 @@ def clean(event):
     for field, value in event.items():
         event[field] = value.strip()
 
+    event = apply_rules(event)
+
     event["name"], event["sponsor"] = tuple(
         # Firebase does not allow these characters in keys
         re.sub('[$#[\]./]', ' + ', key)
@@ -79,14 +81,15 @@ def clean(event):
     # "date" already incorporated into "start" and "end"
     event.pop("date", None)
 
-    return apply_rules(event)
+    return event
 
 
 def apply_rules(event):
-    # Transfer events don't have a sponsor field
-    if "UC" in event["name"] \
-    or "Transfer Center" in event["location"].capitalize():
-        event["Transfer Center"] = True
+    # Not all transfer events don't have a sponsor field
+    if "De Anza College Transfer Center" not in event["sponsor"] \
+    and ("UC" in event["name"]
+         or "Transfer Center" in event["location"].capitalize()):
+        event["De Anza College Transfer Center"] = True
 
     return event
 
