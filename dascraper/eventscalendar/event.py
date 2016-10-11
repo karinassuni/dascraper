@@ -50,7 +50,7 @@ def clean(event):
 
     event["name"], event["sponsor"] = tuple(
         # Firebase does not allow these characters in keys
-        re.sub('[$#[\].]', '', key)
+        re.sub('[$#[\]./]', ' + ', key)
         for key in (event["name"], event["sponsor"])
     )
 
