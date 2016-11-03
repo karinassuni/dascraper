@@ -75,6 +75,8 @@ def main():
 
     logging.info("Parsing complete! Saved to calendarevents.json")
 
+    return events
+
 
 if __name__ == "__main__":
     main()
